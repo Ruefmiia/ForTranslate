@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "ForTranslate 泰语翻译",
+  "description": "面向泰娱内容的泰语自然中文翻译工具。",
+  "version": "0.1.0",
+  "permissions": ["contextMenus", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "ForTranslate",
+    "default_popup": "src/popup/popup.html"
+  },
+  "options_page": "src/options/options.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "commands": {
+    "translate-selection": {
+      "suggested_key": {
+        "default": "Alt+Shift+T"
+      },
+      "description": "翻译当前选中文字"
+    }
+  }
+}

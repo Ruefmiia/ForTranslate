@@ -1,0 +1,10 @@
+{
+  "name": "fortranslate-browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node tools/validate.mjs",
+    "mock": "python tools/mock_server.py"
+  }
+}
