@@ -6,6 +6,7 @@ import hmac
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from starlette.datastructures import MutableHeaders
 
 from .config import Settings
 from .database import Database
@@ -22,6 +23,40 @@ class TermRequest(BaseModel):
     source: str = Field(min_length=1, max_length=200)
     target: str = Field(min_length=1, max_length=200)
     note: str = Field(default="", max_length=500)
+
+
+class ExtensionPrivateNetworkMiddleware:
+    """Allow Chrome/Edge extensions to reach a loopback-hosted backend."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+        origin = headers.get(b"origin", b"").lower()
+        private_network = headers.get(b"access-control-request-private-network", b"").lower() == b"true"
+        extension_origin = origin.startswith((b"chrome-extension://", b"edge-extension://"))
+        if not (private_network and extension_origin):
+            await self.app(scope, receive, send)
+            return
+
+        filtered_scope = dict(scope)
+        filtered_scope["headers"] = [
+            (name, value)
+            for name, value in scope.get("headers", [])
+            if name.lower() != b"access-control-request-private-network"
+        ]
+
+        async def send_with_private_network(message):
+            if message["type"] == "http.response.start":
+                MutableHeaders(scope=message)["Access-Control-Allow-Private-Network"] = "true"
+            await send(message)
+
+        await self.app(filtered_scope, receive, send_with_private_network)
 
 
 def create_app(settings: Settings | None = None, llm_client: LLMClient | None = None) -> FastAPI:
@@ -41,6 +76,7 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type"],
     )
+    app.add_middleware(ExtensionPrivateNetworkMiddleware)
     app.state.database = database
     app.state.llm_client = client
     app.state.settings = settings

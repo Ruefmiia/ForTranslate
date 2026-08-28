@@ -53,10 +53,12 @@ def test_authentication_and_health(tmp_path):
                 "Origin": "chrome-extension://test",
                 "Access-Control-Request-Method": "POST",
                 "Access-Control-Request-Headers": "authorization,content-type",
+                "Access-Control-Request-Private-Network": "true",
             },
         )
         assert preflight.status_code == 200
         assert preflight.headers["access-control-allow-origin"] == "*"
+        assert preflight.headers["access-control-allow-private-network"] == "true"
 
 
 def test_glossary_is_injected_and_usage_is_recorded(tmp_path):
