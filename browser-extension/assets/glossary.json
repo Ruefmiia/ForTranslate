@@ -1,5 +1,5 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "terms": [
     {
       "source": "555",
@@ -55,16 +55,6 @@
       "source": "กวิน แคสกี้",
       "target": "Gawin Caskey",
       "note": "GMMTV艺人全名"
-    },
-    {
-      "source": "ก้อง",
-      "target": "Kong",
-      "note": "DMD艺人昵称；根据语境与其他同名艺人区分"
-    },
-    {
-      "source": "ก้อง ก้องภพ",
-      "target": "Kong Kongpob",
-      "note": "DMD艺人姓名；全名拼写宜结合最新官方资料核验"
     },
     {
       "source": "ข้าวตัง",
@@ -207,11 +197,6 @@
       "note": "可能是高票档福利；根据活动说明处理"
     },
     {
-      "source": "ซี",
-      "target": "Zee",
-      "note": "DMD艺人昵称；人名语境保留英文"
-    },
-    {
       "source": "ซี ทวินันท์",
       "target": "Sea Tawinan",
       "note": "GMMTV艺人常用名；不要与DMD艺人Zee混淆"
@@ -220,16 +205,6 @@
       "source": "ซี ทวินันท์ อนุกูลประเสริฐ",
       "target": "Sea Tawinan Anukoolprasert",
       "note": "GMMTV艺人全名"
-    },
-    {
-      "source": "ซี พฤกษ์ พานิช",
-      "target": "Zee Pruk",
-      "note": "DMD艺人全名"
-    },
-    {
-      "source": "ซีนุนิว",
-      "target": "ZeeNuNew",
-      "note": "DMD艺人组合名；作为整体识别"
     },
     {
       "source": "ดัง",
@@ -260,21 +235,6 @@
       "source": "ติดเทรนด์",
       "target": "上趋势/上热搜",
       "note": "表示话题进入平台趋势榜"
-    },
-    {
-      "source": "ติวเตอร์",
-      "target": "Tutor",
-      "note": "DMD艺人昵称；人名语境不要译为导师"
-    },
-    {
-      "source": "ติวเตอร์ กรภัทร์ ลำน้อย",
-      "target": "Tutor Koraphat",
-      "note": "DMD艺人全名"
-    },
-    {
-      "source": "ติวเตอร์ยิม",
-      "target": "TutorYim",
-      "note": "DMD艺人组合名；作为整体识别"
     },
     {
       "source": "ติ่ง",
@@ -312,16 +272,6 @@
       "note": "GMMTV艺人全名"
     },
     {
-      "source": "นุนิว",
-      "target": "NuNew",
-      "note": "DMD艺人昵称；保留惯用大小写"
-    },
-    {
-      "source": "นุนิว ชวรินทร์ เพริศพิริยะวงศ์",
-      "target": "NuNew Chawarin",
-      "note": "DMD艺人全名"
-    },
-    {
       "source": "น่ารัก",
       "target": "可爱",
       "note": "高频评价词"
@@ -335,16 +285,6 @@
       "source": "น้องเนย",
       "target": "农妮",
       "note": "艺人昵称；根据具体语境使用"
-    },
-    {
-      "source": "น้ำปิง",
-      "target": "Namping",
-      "note": "DMD艺人昵称；作为人名整体识别"
-    },
-    {
-      "source": "น้ำปิง นภัสกร ปิงเมือง",
-      "target": "Namping Napatsakorn",
-      "note": "DMD艺人全名"
     },
     {
       "source": "บัตรหมด",
@@ -520,16 +460,6 @@
       "source": "ยอดเอนเกจ",
       "target": "互动量",
       "note": "通常包括点赞、转发、引用和回复等数据"
-    },
-    {
-      "source": "ยิม",
-      "target": "Yim",
-      "note": "DMD艺人昵称；人名语境保留英文"
-    },
-    {
-      "source": "ยิม ปริญญากรณ์ ขันสวะ",
-      "target": "Yim Pharinyakorn",
-      "note": "DMD艺人全名"
     },
     {
       "source": "ยูเนี่ยน มอลล์",
@@ -712,31 +642,6 @@
       "note": "位于暖武里府Pak Kret；不宜笼统译成曼谷市中心"
     },
     {
-      "source": "อู่อู๋",
-      "target": "Auau",
-      "note": "DMD艺人昵称；作为人名整体识别"
-    },
-    {
-      "source": "อู่อู๋ ธนภูมิ เศรษฐสิทธิกุล",
-      "target": "Auau Thanaphum",
-      "note": "DMD艺人全名"
-    },
-    {
-      "source": "เก่ง",
-      "target": "Keng",
-      "note": "DMD艺人昵称；人名语境不要仅按优秀翻译"
-    },
-    {
-      "source": "เก่ง หฤษฎ์",
-      "target": "Keng Harit",
-      "note": "DMD艺人姓名；全名拼写宜结合最新官方资料核验"
-    },
-    {
-      "source": "เก่งน้ำปิง",
-      "target": "KengNamping",
-      "note": "DMD艺人组合名；作为整体识别"
-    },
-    {
       "source": "เข้าด้อม",
       "target": "入坑/入圈",
       "note": "指加入某艺人或作品的粉丝圈"
@@ -800,16 +705,6 @@
       "source": "เทรนด์",
       "target": "趋势/热搜",
       "note": "通常指X平台趋势榜"
-    },
-    {
-      "source": "เน็ต",
-      "target": "Net",
-      "note": "DMD艺人昵称；人名语境不要译为网络"
-    },
-    {
-      "source": "เน็ต สิรภพ มานิธิคุณ",
-      "target": "Net Siraphop",
-      "note": "DMD艺人全名"
     },
     {
       "source": "เน็ตเจมส์",
@@ -1020,21 +915,6 @@
       "source": "โดนตก",
       "target": "被圈粉/入坑",
       "note": "不要按字面翻译为掉下去"
-    },
-    {
-      "source": "โทมัส",
-      "target": "Thomas",
-      "note": "DMD艺人昵称；保留英文拼写"
-    },
-    {
-      "source": "โทมัส ธีร์ทัศน์",
-      "target": "Thomas Teetut",
-      "note": "DMD艺人姓名；全名拼写宜结合最新官方资料核验"
-    },
-    {
-      "source": "โทมัสก้อง",
-      "target": "ThomasKong",
-      "note": "DMD艺人组合名；作为整体识别"
     },
     {
       "source": "โฟร์ท",
