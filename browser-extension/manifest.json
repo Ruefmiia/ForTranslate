@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ForTranslation翻译",
   "description": "以泰语和泰娱内容为重点的自然中文翻译工具。",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "permissions": ["contextMenus", "scripting", "sidePanel", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {

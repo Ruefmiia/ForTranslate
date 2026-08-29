@@ -1,0 +1,1105 @@
+{
+  "version": "1.2.1",
+  "terms": [
+    {
+      "source": "555",
+      "target": "哈哈哈",
+      "note": "泰语数字5读作ห้า；连续多个5表示笑声"
+    },
+    {
+      "source": "55555",
+      "target": "哈哈哈哈",
+      "note": "连续多个5表示大笑；无需逐个数字保留"
+    },
+    {
+      "source": "JASP.ER",
+      "target": "JASP.ER",
+      "note": "GMMTV旗下男子组合名；保持官方标点和大写"
+    },
+    {
+      "source": "LYKN",
+      "target": "LYKN",
+      "note": "GMMTV旗下男子组合名；保持官方大写"
+    },
+    {
+      "source": "Perth Tanapon",
+      "target": "Perth Tanapon",
+      "note": "艺人常用英文名；不要翻译为澳大利亚城市珀斯"
+    },
+    {
+      "source": "PerthSanta",
+      "target": "PerthSanta",
+      "note": "GMMTV艺人组合英文写法；保持原样"
+    },
+    {
+      "source": "Santa Pongsapak",
+      "target": "Santa Pongsapak",
+      "note": "艺人常用英文名"
+    },
+    {
+      "source": "กดบัตร",
+      "target": "抢票/买票",
+      "note": "演唱会语境通常译为抢票"
+    },
+    {
+      "source": "กรี๊ด",
+      "target": "尖叫/啊啊啊",
+      "note": "网络语境常表达兴奋，不一定是真实尖叫"
+    },
+    {
+      "source": "กวิน",
+      "target": "Gawin",
+      "note": "GMMTV艺人昵称；根据语境与其他同名人物区分"
+    },
+    {
+      "source": "กวิน แคสกี้",
+      "target": "Gawin Caskey",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "ก้อง",
+      "target": "Kong",
+      "note": "DMD艺人昵称；根据语境与其他同名艺人区分"
+    },
+    {
+      "source": "ก้อง ก้องภพ",
+      "target": "Kong Kongpob",
+      "note": "DMD艺人姓名；全名拼写宜结合最新官方资料核验"
+    },
+    {
+      "source": "ข้าวตัง",
+      "target": "Khaotung",
+      "note": "GMMTV艺人昵称；人名语境不要译为米钱"
+    },
+    {
+      "source": "ข้าวตัง ธนวัฒน์ รัตนกิจไพศาล",
+      "target": "Khaotung Thanawat",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "คุณเขา",
+      "target": "他/她/那位",
+      "note": "带礼貌或亲昵感；词本身不标示性别"
+    },
+    {
+      "source": "คู่จริง",
+      "target": "现实情侣/真情侣",
+      "note": "高风险表述；必须结合可靠上下文判断"
+    },
+    {
+      "source": "คู่จิ้น",
+      "target": "荧幕CP/热门配对",
+      "note": "不代表人物在现实中存在恋爱关系"
+    },
+    {
+      "source": "งานประกาศรางวัล",
+      "target": "颁奖礼",
+      "note": "活动类别"
+    },
+    {
+      "source": "งานเปิดตัว",
+      "target": "发布会/首发活动",
+      "note": "根据产品、品牌或影视作品语境处理"
+    },
+    {
+      "source": "จตุจักร",
+      "target": "乍都乍/Chatuchak",
+      "note": "曼谷地区名；中文译名按项目规范统一"
+    },
+    {
+      "source": "จอส",
+      "target": "Joss",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "จอส เวอาห์ แสงเงิน",
+      "target": "Joss Way-ar",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "จอส-กวิน",
+      "target": "Joss-Gawin",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "จอสกวิน",
+      "target": "JossGawin",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "จิมมี่",
+      "target": "Jimmy",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "จิมมี่ จิตรพล โพธิวิหค",
+      "target": "Jimmy Jitaraphol",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "จิมมี่-ซี",
+      "target": "Jimmy-Sea",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "จิมมี่ซี",
+      "target": "JimmySea",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "จุง",
+      "target": "Joong",
+      "note": "GMMTV艺人昵称；保留英文拼写"
+    },
+    {
+      "source": "จุง อาเชน ไอย์ดึน",
+      "target": "Joong Archen",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "จุงดัง",
+      "target": "JoongDunk",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "จุดลงทะเบียน",
+      "target": "签到处/登记点",
+      "note": "活动现场指引"
+    },
+    {
+      "source": "จูเนียร์",
+      "target": "Junior",
+      "note": "GMMTV艺人昵称；人名语境不要译为年少者"
+    },
+    {
+      "source": "จูเนียร์ ปณชัย ศรีอาริยะรุ่งเรือง",
+      "target": "Junior Panachai",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "จูเนียร์-มาร์ค",
+      "target": "Junior-Mark",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "จูเนียร์มาร์ค",
+      "target": "JuniorMark",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "ชิป",
+      "target": "嗑CP",
+      "note": "可作动词；根据语境也可能是英文ship的其他含义"
+    },
+    {
+      "source": "ชิปเปอร์",
+      "target": "CP粉",
+      "note": "指支持某一艺人配对的粉丝"
+    },
+    {
+      "source": "ช็อตฟีล",
+      "target": "瞬间下头/气氛被打断",
+      "note": "英泰混成网络词；按具体语气翻译"
+    },
+    {
+      "source": "ซาวด์เช็ก",
+      "target": "彩排观摩/Soundcheck",
+      "note": "可能是高票档福利；根据活动说明处理"
+    },
+    {
+      "source": "ซี",
+      "target": "Zee",
+      "note": "DMD艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "ซี ทวินันท์",
+      "target": "Sea Tawinan",
+      "note": "GMMTV艺人常用名；不要与DMD艺人Zee混淆"
+    },
+    {
+      "source": "ซี ทวินันท์ อนุกูลประเสริฐ",
+      "target": "Sea Tawinan Anukoolprasert",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "ซี พฤกษ์ พานิช",
+      "target": "Zee Pruk",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "ซีนุนิว",
+      "target": "ZeeNuNew",
+      "note": "DMD艺人组合名；作为整体识别"
+    },
+    {
+      "source": "ดัง",
+      "target": "Dunk",
+      "note": "GMMTV艺人昵称；人名语境不要按泰语普通词义翻译"
+    },
+    {
+      "source": "ดัง ณัฎฐ์ฐชัย บุญประเสริฐ",
+      "target": "Dunk Natachai",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "ดูย้อนหลัง",
+      "target": "回看/观看回放",
+      "note": "剧集、节目和直播文案高频词"
+    },
+    {
+      "source": "ด้อม",
+      "target": "粉丝圈",
+      "note": "泰娱粉丝文化用语"
+    },
+    {
+      "source": "ตกคน",
+      "target": "圈粉",
+      "note": "指艺人或某个片段吸引了新粉丝"
+    },
+    {
+      "source": "ติดเทรนด์",
+      "target": "上趋势/上热搜",
+      "note": "表示话题进入平台趋势榜"
+    },
+    {
+      "source": "ติวเตอร์",
+      "target": "Tutor",
+      "note": "DMD艺人昵称；人名语境不要译为导师"
+    },
+    {
+      "source": "ติวเตอร์ กรภัทร์ ลำน้อย",
+      "target": "Tutor Koraphat",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "ติวเตอร์ยิม",
+      "target": "TutorYim",
+      "note": "DMD艺人组合名；作为整体识别"
+    },
+    {
+      "source": "ติ่ง",
+      "target": "追星/粉丝",
+      "note": "泰语网络口语；可中性自称，也可能带调侃意味"
+    },
+    {
+      "source": "ถ่ายทอดสด",
+      "target": "直播",
+      "note": "可指电视或网络直播"
+    },
+    {
+      "source": "ธันเดอร์โดม",
+      "target": "Thunder Dome",
+      "note": "演唱会及活动场馆专名"
+    },
+    {
+      "source": "ธันเดอร์โดม เมืองทองธานี",
+      "target": "Thunder Dome（蒙通他尼）",
+      "note": "位于IMPACT会展区附近"
+    },
+    {
+      "source": "นานิ",
+      "target": "Nani",
+      "note": "GMMTV艺人昵称；根据语境与其他含义区分"
+    },
+    {
+      "source": "นานิ หิรัญกฤษฎิ์",
+      "target": "Nani Hirunkit",
+      "note": "GMMTV艺人常用名"
+    },
+    {
+      "source": "นานิ หิรัญกฤษฎิ์ ช่างคำ",
+      "target": "Nani Hirunkit Changkham",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "นุนิว",
+      "target": "NuNew",
+      "note": "DMD艺人昵称；保留惯用大小写"
+    },
+    {
+      "source": "นุนิว ชวรินทร์ เพริศพิริยะวงศ์",
+      "target": "NuNew Chawarin",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "น่ารัก",
+      "target": "可爱",
+      "note": "高频评价词"
+    },
+    {
+      "source": "น้อง",
+      "target": "弟弟/妹妹",
+      "note": "也可能是亲昵称呼，不一定表示亲属"
+    },
+    {
+      "source": "น้องเนย",
+      "target": "农妮",
+      "note": "艺人昵称；根据具体语境使用"
+    },
+    {
+      "source": "น้ำปิง",
+      "target": "Namping",
+      "note": "DMD艺人昵称；作为人名整体识别"
+    },
+    {
+      "source": "น้ำปิง นภัสกร ปิงเมือง",
+      "target": "Namping Napatsakorn",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "บัตรหมด",
+      "target": "票已售罄",
+      "note": "活动票务语境"
+    },
+    {
+      "source": "บุ๊ค",
+      "target": "Book",
+      "note": "GMMTV艺人昵称；人名语境不要译为书"
+    },
+    {
+      "source": "บุ๊ค กษิดิ์เดช ปลูกผล",
+      "target": "Book Kasidet",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "บุ๋น",
+      "target": "Boun",
+      "note": "GMMTV艺人昵称；注意泰文声调符号"
+    },
+    {
+      "source": "บุ๋น นพณัฐ กันทะชัย",
+      "target": "Boun Noppanut",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "บุ๋น-เปรม",
+      "target": "Boun-Prem",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "บุ๋นเปรม",
+      "target": "BounPrem",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "บ้าน",
+      "target": "粉丝站/站子",
+      "note": "仅限粉丝圈账号语境；普通语境表示家或房子"
+    },
+    {
+      "source": "บ้านคู่",
+      "target": "CP联合站/双人粉站",
+      "note": "与个人艺人粉丝站相对"
+    },
+    {
+      "source": "บ้านเดี่ยว",
+      "target": "个人站",
+      "note": "指主要支持单个艺人的粉丝站"
+    },
+    {
+      "source": "บ้านเบส",
+      "target": "粉丝站/站子",
+      "note": "泰国粉丝圈账号或组织称呼"
+    },
+    {
+      "source": "ประตูเปิด",
+      "target": "开放入场",
+      "note": "活动文案中不宜只译为门开了"
+    },
+    {
+      "source": "ปอนด์",
+      "target": "庞德/Pond",
+      "note": "GMMTV艺人昵称；通常保留Pond或采用项目既定译名"
+    },
+    {
+      "source": "ปอนด์ ณราวิชญ์ เลิศรัตน์โกสุม",
+      "target": "Pond Naravit",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "ปอนด์ภูวินทร์",
+      "target": "PondPhuwin",
+      "note": "GMMTV艺人组合名；作为整体识别，不要拆分翻译"
+    },
+    {
+      "source": "ปั่นแท็ก",
+      "target": "刷话题/冲趋势",
+      "note": "X平台应援用语；指集中发布指定话题标签"
+    },
+    {
+      "source": "ผังที่นั่ง",
+      "target": "座位图",
+      "note": "演唱会和粉丝见面会票务用语"
+    },
+    {
+      "source": "ฝากด้วยนะ",
+      "target": "请多多支持",
+      "note": "艺人宣传作品或活动时的常用客套语"
+    },
+    {
+      "source": "ฝากติดตามด้วยนะ",
+      "target": "请关注/请多多支持",
+      "note": "宣传作品、节目或账号时使用"
+    },
+    {
+      "source": "พารากอน ฮอลล์",
+      "target": "Paragon Hall",
+      "note": "活动场馆专名；通常保留英文"
+    },
+    {
+      "source": "พี่",
+      "target": "哥/姐",
+      "note": "泰语称谓；根据人物性别和关系判断"
+    },
+    {
+      "source": "ฟอส",
+      "target": "Force",
+      "note": "GMMTV艺人昵称；保留英文拼写"
+    },
+    {
+      "source": "ฟอส จิรัชพงศ์ ศรีแสง",
+      "target": "Force Jiratchapong",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "ฟอส-บุ๊ค",
+      "target": "Force-Book",
+      "note": "GMMTV官方文案常见组合写法"
+    },
+    {
+      "source": "ฟอสบุ๊ค",
+      "target": "ForceBook",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "ภูวินทร์",
+      "target": "普文/Phuwin",
+      "note": "GMMTV艺人昵称；通常保留Phuwin或采用项目既定译名"
+    },
+    {
+      "source": "ภูวินทร์ ตั้งศักดิ์ยืน",
+      "target": "Phuwin Tangsakyuen",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "มัมหมี",
+      "target": "妈粉",
+      "note": "对艺人具有养崽式疼爱态度的粉丝"
+    },
+    {
+      "source": "มาร์ค จิรันธนิน",
+      "target": "Mark Jiruntanin",
+      "note": "GMMTV艺人常用名；与其他名为Mark的艺人区分"
+    },
+    {
+      "source": "มาร์ค จิรันธนิน ตรัยรัตนยนต์",
+      "target": "Mark Jiruntanin Trairattanayon",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "มาเจอกันนะ",
+      "target": "到时见/来见面吧",
+      "note": "活动邀约用语"
+    },
+    {
+      "source": "มิกซ์",
+      "target": "Mix",
+      "note": "艺人昵称；人名语境不要译为混合"
+    },
+    {
+      "source": "มิกซ์ สหภาพ วงศ์ราษฎร์",
+      "target": "Mix Sahaphap",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "ม๊า",
+      "target": "妈粉/妈妈",
+      "note": "亲昵或口语写法；不一定表示真实亲属"
+    },
+    {
+      "source": "ยอดเอนเกจ",
+      "target": "互动量",
+      "note": "通常包括点赞、转发、引用和回复等数据"
+    },
+    {
+      "source": "ยิม",
+      "target": "Yim",
+      "note": "DMD艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "ยิม ปริญญากรณ์ ขันสวะ",
+      "target": "Yim Pharinyakorn",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "ยูเนี่ยน มอลล์",
+      "target": "Union Mall",
+      "note": "曼谷购物中心；Union Hall所在地"
+    },
+    {
+      "source": "ยูเนี่ยน ฮอลล์",
+      "target": "Union Hall",
+      "note": "演唱会、粉丝见面会常用场馆"
+    },
+    {
+      "source": "รวมพล",
+      "target": "集合/粉丝集合",
+      "note": "活动现场集合或粉丝应援集合"
+    },
+    {
+      "source": "รอบการแสดง",
+      "target": "演出场次",
+      "note": "例如รอบบ่าย表示下午场"
+    },
+    {
+      "source": "ราชมังคลากีฬาสถาน",
+      "target": "拉加曼加拉国家体育场",
+      "note": "曼谷大型体育场及演唱会场馆"
+    },
+    {
+      "source": "รี",
+      "target": "转发",
+      "note": "X平台动作；รีโพสต์或รีทวิต的简称"
+    },
+    {
+      "source": "รีทวิต",
+      "target": "转发",
+      "note": "Twitter时期形成的常用说法"
+    },
+    {
+      "source": "ลงเรือ",
+      "target": "上船/入CP坑",
+      "note": "用于开始支持某一CP"
+    },
+    {
+      "source": "ลูก",
+      "target": "崽/孩子",
+      "note": "粉丝对艺人的宠爱称呼；也可表示真实孩子"
+    },
+    {
+      "source": "ลูกชาย",
+      "target": "儿子/男崽",
+      "note": "可能是粉丝对男艺人的宠爱称呼"
+    },
+    {
+      "source": "ลูกสาว",
+      "target": "女儿/女崽",
+      "note": "可能是粉丝对女艺人的宠爱称呼"
+    },
+    {
+      "source": "วินนี่",
+      "target": "Winny",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "วินนี่ ธนวินท์ ผลเจริญรัตน์",
+      "target": "Winny Thanawin",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "วินนี่-สตางค์",
+      "target": "Winny-Satang",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "วินนี่สตางค์",
+      "target": "WinnySatang",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "วิลเลี่ยม",
+      "target": "William",
+      "note": "GMMTV及LYKN成员昵称；人名语境保留英文"
+    },
+    {
+      "source": "วิลเลี่ยม จักรภัทร",
+      "target": "William Jakrapatr",
+      "note": "GMMTV及LYKN成员常用名"
+    },
+    {
+      "source": "วิลเลี่ยม จักรภัทร แก้วพันธุ์พงษ์",
+      "target": "William Jakrapatr Kaewpanpong",
+      "note": "GMMTV及LYKN成员全名"
+    },
+    {
+      "source": "วิลเลี่ยม-เอส",
+      "target": "William-Est",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "วิลเลี่ยมเอส",
+      "target": "WilliamEst",
+      "note": "GMMTV艺人组合名；在#PerthSanta关联X内容中高频共同出现"
+    },
+    {
+      "source": "สกาย",
+      "target": "Sky",
+      "note": "GMMTV艺人昵称；人名语境不要译为天空"
+    },
+    {
+      "source": "สกาย วงศ์รวี",
+      "target": "Sky Wongravee",
+      "note": "GMMTV艺人常用名"
+    },
+    {
+      "source": "สกาย วงศ์รวี นทีธร",
+      "target": "Sky Wongravee Nateetorn",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "สกาย-นานิ",
+      "target": "Sky-Nani",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "สกายนานิ",
+      "target": "SkyNani",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "สตางค์",
+      "target": "Satang",
+      "note": "GMMTV艺人昵称；人名语境不要译为零钱"
+    },
+    {
+      "source": "สตางค์ กิตติภพ เสรีวิชยสวัสดิ์",
+      "target": "Satang Kittiphop",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "สยามพารากอน",
+      "target": "暹罗百丽宫/Siam Paragon",
+      "note": "曼谷商场及活动地点"
+    },
+    {
+      "source": "สิทธิพิเศษ",
+      "target": "福利/权益",
+      "note": "常指不同票档包含的活动福利"
+    },
+    {
+      "source": "หวีด",
+      "target": "嗑疯了/疯狂安利",
+      "note": "泰国粉丝圈高频口语；根据语气调整"
+    },
+    {
+      "source": "หัวหมาก",
+      "target": "华马克/Huamark",
+      "note": "曼谷地区及场馆名称组成部分"
+    },
+    {
+      "source": "อินดอร์ สเตเดียม หัวหมาก",
+      "target": "华马克室内体育馆",
+      "note": "英文常写作Indoor Stadium Huamark"
+    },
+    {
+      "source": "อิมแพค",
+      "target": "Impact",
+      "note": "演唱会或场馆专名时保留英文"
+    },
+    {
+      "source": "อิมแพ็ค",
+      "target": "IMPACT",
+      "note": "场馆或会展中心专名时保留官方大写形式"
+    },
+    {
+      "source": "อิมแพ็ค อารีน่า",
+      "target": "IMPACT Arena",
+      "note": "泰国常用大型演唱会场馆"
+    },
+    {
+      "source": "อิมแพ็ค อารีน่า เมืองทองธานี",
+      "target": "IMPACT Arena（蒙通他尼）",
+      "note": "位于暖武里府Pak Kret；不宜笼统译成曼谷市中心"
+    },
+    {
+      "source": "อู่อู๋",
+      "target": "Auau",
+      "note": "DMD艺人昵称；作为人名整体识别"
+    },
+    {
+      "source": "อู่อู๋ ธนภูมิ เศรษฐสิทธิกุล",
+      "target": "Auau Thanaphum",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "เก่ง",
+      "target": "Keng",
+      "note": "DMD艺人昵称；人名语境不要仅按优秀翻译"
+    },
+    {
+      "source": "เก่ง หฤษฎ์",
+      "target": "Keng Harit",
+      "note": "DMD艺人姓名；全名拼写宜结合最新官方资料核验"
+    },
+    {
+      "source": "เก่งน้ำปิง",
+      "target": "KengNamping",
+      "note": "DMD艺人组合名；作为整体识别"
+    },
+    {
+      "source": "เข้าด้อม",
+      "target": "入坑/入圈",
+      "note": "指加入某艺人或作品的粉丝圈"
+    },
+    {
+      "source": "เคมีดี",
+      "target": "很搭/很有化学反应",
+      "note": "常评价演员合作或CP互动"
+    },
+    {
+      "source": "เจม",
+      "target": "Gemini",
+      "note": "เจมีไนน์的简称；根据语境识别"
+    },
+    {
+      "source": "เจมีไนน์",
+      "target": "Gemini",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "เจมีไนน์ นรวิชญ์ ฐิติเจริญรักษ์",
+      "target": "Gemini Norawit",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "เจมีไนน์-โฟร์ท",
+      "target": "Gemini-Fourth",
+      "note": "GMMTV官方文案常见组合写法"
+    },
+    {
+      "source": "เจมีไนน์โฟร์ท",
+      "target": "GeminiFourth",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "เจมโฟ้ด",
+      "target": "GeminiFourth",
+      "note": "粉丝圈压缩组合名；不要逐字翻译"
+    },
+    {
+      "source": "เจเจ มอลล์",
+      "target": "JJ Mall",
+      "note": "曼谷Chatuchak一带购物中心"
+    },
+    {
+      "source": "เจเจ ฮอลล์",
+      "target": "JJ Hall",
+      "note": "曼谷Chatuchak一带活动场馆"
+    },
+    {
+      "source": "เจ้าตัว",
+      "target": "本人/当事人",
+      "note": "常用于指艺人本人"
+    },
+    {
+      "source": "เซ็นทรัลเวิลด์",
+      "target": "CentralWorld",
+      "note": "曼谷商场及活动地点；可按项目规范译为尚泰世界购物中心"
+    },
+    {
+      "source": "เทรนด์",
+      "target": "趋势/热搜",
+      "note": "通常指X平台趋势榜"
+    },
+    {
+      "source": "เน็ต",
+      "target": "Net",
+      "note": "DMD艺人昵称；人名语境不要译为网络"
+    },
+    {
+      "source": "เน็ต สิรภพ มานิธิคุณ",
+      "target": "Net Siraphop",
+      "note": "DMD艺人全名"
+    },
+    {
+      "source": "เน็ตเจมส์",
+      "target": "NetJames",
+      "note": "历史组合语境；使用前注意作品时间和艺人现状"
+    },
+    {
+      "source": "เบเนฟิต",
+      "target": "票档福利",
+      "note": "英文benefit的泰语音译；常见于票务海报"
+    },
+    {
+      "source": "เปรม",
+      "target": "Prem",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "เปรม วรุศ ชวลิตรุจิวงษ์",
+      "target": "Prem Warut",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "เปิดขายบัตร",
+      "target": "开票/开始售票",
+      "note": "票务正式表达"
+    },
+    {
+      "source": "เพิร์ธ",
+      "target": "Perth",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "เพิร์ธ ธนพนธ์ สุขุมพันธนาสาร",
+      "target": "Perth Tanapon Sukumpantanasan",
+      "note": "GMMTV艺人全名；由#PerthSanta及相关X公开内容交叉确认"
+    },
+    {
+      "source": "เพิร์ธ-แซนต้า",
+      "target": "Perth-Santa",
+      "note": "GMMTV艺人组合名；带连字符写法"
+    },
+    {
+      "source": "เพิร์ธแซนต้า",
+      "target": "PerthSanta",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "เฟิร์ส",
+      "target": "First",
+      "note": "GMMTV艺人昵称；人名语境不要译为第一"
+    },
+    {
+      "source": "เฟิร์ส คณพันธ์ ปุ้ยตระกูล",
+      "target": "First Kanaphan",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "เฟิร์สข้าวตัง",
+      "target": "FirstKhaotung",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "เมน",
+      "target": "本命/主推",
+      "note": "指自己最喜欢或主要支持的艺人"
+    },
+    {
+      "source": "เมืองทองธานี",
+      "target": "蒙通他尼/Muang Thong Thani",
+      "note": "暖武里府大型会展及场馆区域"
+    },
+    {
+      "source": "เริ่มการแสดง",
+      "target": "演出开始",
+      "note": "活动时间表用语"
+    },
+    {
+      "source": "เรือ",
+      "target": "CP/船",
+      "note": "粉丝配对语境；普通语境仍可表示船"
+    },
+    {
+      "source": "เหนือเมน",
+      "target": "比本命还上头的人",
+      "note": "粉丝圈戏称；不宜按字面硬译"
+    },
+    {
+      "source": "เอส",
+      "target": "Est",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "เอส ศุภ",
+      "target": "Est Supha",
+      "note": "GMMTV艺人常用名"
+    },
+    {
+      "source": "เอส ศุภ สง่าวรวงศ์",
+      "target": "Est Supha Sangaworawong",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "เอิร์ท",
+      "target": "Earth",
+      "note": "艺人昵称；人名语境不要译为地球"
+    },
+    {
+      "source": "เอิร์ท พิรพัฒน์ วัฒนเศรษสิริ",
+      "target": "Earth Pirapat",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "เอิร์ทมิกซ์",
+      "target": "EarthMix",
+      "note": "GMMTV艺人组合名；作为整体识别"
+    },
+    {
+      "source": "เอ็นดู",
+      "target": "怜爱/太招人疼了",
+      "note": "含疼爱、宠爱意味，不宜只机械译为可爱"
+    },
+    {
+      "source": "แจกวาร์ป",
+      "target": "发账号链接/发出处",
+      "note": "指分享社交账号、原帖或人物信息"
+    },
+    {
+      "source": "แจสเปอร์",
+      "target": "JASP.ER",
+      "note": "组合名的泰语读音写法；根据艺人语境识别"
+    },
+    {
+      "source": "แซนต้า",
+      "target": "Santa",
+      "note": "GMMTV艺人昵称；人名语境不要译为圣诞老人"
+    },
+    {
+      "source": "แซนต้า พงศภัค อุดมโภชน์",
+      "target": "Santa Pongsapak Udompoch",
+      "note": "GMMTV艺人全名；由#PerthSanta及相关X公开内容交叉确认"
+    },
+    {
+      "source": "แฟนคลับ",
+      "target": "粉丝",
+      "note": "泛指艺人或作品的粉丝"
+    },
+    {
+      "source": "แฟนคอน",
+      "target": "粉丝演唱会",
+      "note": "英文fan concert的泰语简称"
+    },
+    {
+      "source": "แฟนด้อม",
+      "target": "粉丝圈",
+      "note": "英文fandom的泰语音译"
+    },
+    {
+      "source": "แฟนมีต",
+      "target": "粉丝见面会",
+      "note": "แฟนมีตติ้ง的简称"
+    },
+    {
+      "source": "แฟนมีตติ้ง",
+      "target": "粉丝见面会",
+      "note": "英文fan meeting的泰语音译"
+    },
+    {
+      "source": "แม่",
+      "target": "妈粉/妈妈",
+      "note": "粉丝圈可能是角色称呼；不一定表示真实亲属"
+    },
+    {
+      "source": "แล้วเจอกัน",
+      "target": "到时见",
+      "note": "活动或日常口语"
+    },
+    {
+      "source": "แอคหลัก",
+      "target": "大号/主账号",
+      "note": "与แอคหลุม相对"
+    },
+    {
+      "source": "แอคหลุม",
+      "target": "小号/隐秘号",
+      "note": "社交媒体备用或较私密账号；不要直译为洞穴账号"
+    },
+    {
+      "source": "แอด",
+      "target": "管理员/站管",
+      "note": "แอดมิน的简称；也可能是添加或广告的英语借词"
+    },
+    {
+      "source": "แอดมิน",
+      "target": "管理员/站管",
+      "note": "粉丝站或社交账号管理员"
+    },
+    {
+      "source": "โควท",
+      "target": "引用转发",
+      "note": "X平台动作；来自英文quote"
+    },
+    {
+      "source": "โซลด์เอาต์",
+      "target": "售罄",
+      "note": "英文sold out的泰语音译"
+    },
+    {
+      "source": "โดนตก",
+      "target": "被圈粉/入坑",
+      "note": "不要按字面翻译为掉下去"
+    },
+    {
+      "source": "โทมัส",
+      "target": "Thomas",
+      "note": "DMD艺人昵称；保留英文拼写"
+    },
+    {
+      "source": "โทมัส ธีร์ทัศน์",
+      "target": "Thomas Teetut",
+      "note": "DMD艺人姓名；全名拼写宜结合最新官方资料核验"
+    },
+    {
+      "source": "โทมัสก้อง",
+      "target": "ThomasKong",
+      "note": "DMD艺人组合名；作为整体识别"
+    },
+    {
+      "source": "โฟร์ท",
+      "target": "Fourth",
+      "note": "GMMTV艺人昵称；人名语境保留英文"
+    },
+    {
+      "source": "โฟร์ท ณัฐวรรธน์ จิโรชน์ธิกุล",
+      "target": "Fourth Nattawat",
+      "note": "GMMTV艺人全名"
+    },
+    {
+      "source": "โฟ้ด",
+      "target": "Fourth",
+      "note": "โฟร์ท的粉丝圈口语写法"
+    },
+    {
+      "source": "โมเมนต์",
+      "target": "糖点/互动瞬间",
+      "note": "CP语境常译为糖或互动糖点"
+    },
+    {
+      "source": "โมเม้น",
+      "target": "糖点/互动瞬间",
+      "note": "โมเมนต์的非正式写法"
+    },
+    {
+      "source": "ไลฟ์สตรีมมิ่ง",
+      "target": "网络直播",
+      "note": "英文live streaming的泰语音译"
+    },
+    {
+      "source": "ไลแคน",
+      "target": "LYKN",
+      "note": "组合名的泰语读音写法；根据艺人语境识别"
+    },
+    {
+      "source": "ไฮทัช",
+      "target": "击掌会",
+      "note": "英文hi-touch的泰语音译"
+    },
+    {
+      "source": "ไฮบาย",
+      "target": "挥手送别/Hi-Bye",
+      "note": "粉丝活动福利环节"
+    },
+    {
+      "source": "ปอนภูวิน",
+      "target": "PondPhuwin",
+      "note": "ปอนด์ภูวินทร์的社交媒体省略写法；作为组合名整体识别"
+    },
+    {
+      "source": "เพิ้ด",
+      "target": "小佩",
+      "note": "เพิร์ธ的粉丝口语、拟音式可爱写法；明确为Perth人物语境时译作“小佩”"
+    },
+    {
+      "source": "ต้า",
+      "target": "小塔",
+      "note": "แซนต้า的亲昵称呼；仅在PerthSanta或明确为Santa的人物语境中译作“小塔”"
+    },
+    {
+      "source": "เกสคอน",
+      "target": "演唱会嘉宾",
+      "note": "guest concert相关口语缩写；表示去某场演唱会担任嘉宾"
+    }
+  ]
+}

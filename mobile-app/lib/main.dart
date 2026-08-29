@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'api_client.dart';
+import 'direct_api_client.dart';
 import 'models.dart';
+import 'overlay_controller.dart';
 import 'settings_repository.dart';
 
 void main() => runApp(const ForTranslateApp());
@@ -63,11 +65,18 @@ class TranslationScreen extends StatefulWidget {
 class _TranslationScreenState extends State<TranslationScreen> {
   final _sourceController = TextEditingController();
   final _api = ForTranslateApi();
+  final _directApi = DirectApiClient();
+  final _overlay = OverlayController();
   final _settingsRepository = const SettingsRepository();
   AppSettings _settings = const AppSettings(
-    baseUrl: '',
+    mode: 'server',
     token: '',
-    resultFontSize: 18,
+    llmBaseUrl: 'https://api.deepseek.com',
+    llmModel: 'deepseek-chat',
+    llmApiKey: '',
+    resultFontSize: 17,
+    overlayEnabled: false,
+    overlayAutoTranslate: false,
   );
   TranslationResult? _result;
   String? _error;
@@ -76,6 +85,9 @@ class _TranslationScreenState extends State<TranslationScreen> {
   @override
   void initState() {
     super.initState();
+    _overlay.setLaunchHandler(
+      (request) => _pasteAndMaybeTranslate(request.autoTranslate),
+    );
     _loadSettings();
   }
 
@@ -86,6 +98,15 @@ class _TranslationScreenState extends State<TranslationScreen> {
         _settings = value;
         _ready = true;
       });
+      final request = await _overlay.consumeLaunchRequest();
+      if (request != null) await _pasteAndMaybeTranslate(request.autoTranslate);
+    }
+  }
+
+  Future<void> _pasteAndMaybeTranslate(bool autoTranslate) async {
+    await _paste();
+    if (autoTranslate && _sourceController.text.trim().isNotEmpty) {
+      await _translate();
     }
   }
 
@@ -106,11 +127,18 @@ class _TranslationScreenState extends State<TranslationScreen> {
       _error = null;
     });
     try {
-      final value = await _api.translate(
-        baseUrl: _settings.baseUrl,
-        token: _settings.token,
-        text: text,
-      );
+      final value = _settings.usesDirectApi
+          ? await _directApi.translate(
+              baseUrl: _settings.llmBaseUrl,
+              apiKey: _settings.llmApiKey,
+              model: _settings.llmModel,
+              text: text,
+            )
+          : await _api.translate(
+              baseUrl: SettingsRepository.serviceUrl,
+              token: _settings.token,
+              text: text,
+            );
       if (mounted) setState(() => _result = value);
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
@@ -127,6 +155,14 @@ class _TranslationScreenState extends State<TranslationScreen> {
     );
     if (value != null) {
       await _settingsRepository.save(value);
+      if (value.overlayEnabled) {
+        final status = await _overlay.status();
+        if (status.canDraw) {
+          await _overlay.start(autoTranslate: value.overlayAutoTranslate);
+        }
+      } else {
+        await _overlay.stop();
+      }
       if (mounted) setState(() => _settings = value);
     }
   }
@@ -229,10 +265,14 @@ class _TranslationScreenState extends State<TranslationScreen> {
       const SizedBox(height: 8),
       TextField(
         controller: _sourceController,
-        minLines: 7,
-        maxLines: 14,
+        minLines: 4,
+        maxLines: 9,
+        style: const TextStyle(fontSize: 15, height: 1.4),
         textInputAction: TextInputAction.newline,
-        decoration: const InputDecoration(hintText: '粘贴需要翻译的文字'),
+        decoration: const InputDecoration(
+          hintText: '粘贴需要翻译的文字',
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
       ),
       const SizedBox(height: 12),
       Row(
@@ -381,30 +421,54 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late final TextEditingController _url, _token;
+  late final TextEditingController _token, _llmUrl, _llmModel, _llmKey;
+  late String _mode;
   late double _fontSize;
+  late bool _overlayEnabled, _overlayAutoTranslate;
   bool _obscure = true, _testing = false;
-  String _version = '0.1.1';
+  String _version = '0.2.0';
   @override
   void initState() {
     super.initState();
-    _url = TextEditingController(text: widget.initial.baseUrl);
     _token = TextEditingController(text: widget.initial.token);
+    _llmUrl = TextEditingController(text: widget.initial.llmBaseUrl);
+    _llmModel = TextEditingController(text: widget.initial.llmModel);
+    _llmKey = TextEditingController(text: widget.initial.llmApiKey);
+    _mode = widget.initial.mode;
     _fontSize = widget.initial.resultFontSize;
+    _overlayEnabled = widget.initial.overlayEnabled;
+    _overlayAutoTranslate = widget.initial.overlayAutoTranslate;
     PackageInfo.fromPlatform().then((info) {
       if (mounted) setState(() => _version = info.version);
     });
   }
 
   AppSettings get _value => AppSettings(
-    baseUrl: _url.text,
+    mode: _mode,
     token: _token.text,
+    llmBaseUrl: _llmUrl.text,
+    llmModel: _llmModel.text,
+    llmApiKey: _llmKey.text,
     resultFontSize: _fontSize,
+    overlayEnabled: _overlayEnabled,
+    overlayAutoTranslate: _overlayAutoTranslate,
   );
   Future<void> _test() async {
     setState(() => _testing = true);
     try {
-      await widget.api.testConnection(baseUrl: _url.text, token: _token.text);
+      if (_mode == 'server') {
+        await widget.api.testConnection(
+          baseUrl: SettingsRepository.serviceUrl,
+          token: _token.text,
+        );
+      } else {
+        await DirectApiClient().translate(
+          baseUrl: _llmUrl.text,
+          apiKey: _llmKey.text,
+          model: _llmModel.text,
+          text: '连接测试',
+        );
+      }
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -423,8 +487,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
-    _url.dispose();
     _token.dispose();
+    _llmUrl.dispose();
+    _llmModel.dispose();
+    _llmKey.dispose();
     super.dispose();
   }
 
@@ -453,33 +519,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _url,
-            keyboardType: TextInputType.url,
-            decoration: const InputDecoration(
-              labelText: '服务地址',
-              helperText: '当前部署允许 HTTP 明文传输，请仅连接可信服务器。',
-            ),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'server', label: Text('服务令牌')),
+              ButtonSegment(value: 'direct', label: Text('自有 API')),
+            ],
+            selected: {_mode},
+            onSelectionChanged: (value) => setState(() => _mode = value.first),
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _token,
-            obscureText: _obscure,
-            enableSuggestions: false,
-            autocorrect: false,
-            decoration: InputDecoration(
-              labelText: '独立访问令牌',
-              suffixIcon: IconButton(
-                onPressed: () => setState(() => _obscure = !_obscure),
-                tooltip: _obscure ? '显示令牌' : '隐藏令牌',
-                icon: Icon(
-                  _obscure
-                      ? Icons.visibility_rounded
-                      : Icons.visibility_off_rounded,
+          if (_mode == 'server')
+            TextField(
+              controller: _token,
+              obscureText: _obscure,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: '独立访问令牌',
+                suffixIcon: IconButton(
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                  tooltip: _obscure ? '显示令牌' : '隐藏令牌',
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_rounded
+                        : Icons.visibility_off_rounded,
+                  ),
                 ),
               ),
             ),
-          ),
+          if (_mode == 'direct') ...[
+            TextField(
+              controller: _llmUrl,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(labelText: 'OpenAI 兼容 API 地址'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _llmModel,
+              decoration: const InputDecoration(labelText: '模型名称'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _llmKey,
+              obscureText: _obscure,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: const InputDecoration(labelText: 'API Key'),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '自有 API 模式会使用随 App 发布的本地术语库；API Key 仅加密保存在本机。',
+              style: TextStyle(color: AppColors.muted, height: 1.4),
+            ),
+          ],
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: _testing ? null : _test,
@@ -492,6 +584,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: Text(_testing ? '测试中' : '测试连接'),
           ),
           const SizedBox(height: 28),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('快速翻译悬浮条'),
+            subtitle: const Text('首次启用需授予“显示在其他应用上层”权限'),
+            value: _overlayEnabled,
+            onChanged: (value) async {
+              if (value) {
+                final controller = OverlayController();
+                var status = await controller.status();
+                if (!status.canDraw) await controller.requestPermission();
+                status = await controller.status();
+                if (!status.canDraw) return;
+              }
+              setState(() => _overlayEnabled = value);
+            },
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('粘贴后自动翻译'),
+            value: _overlayAutoTranslate,
+            onChanged: _overlayEnabled
+                ? (value) => setState(() => _overlayAutoTranslate = value)
+                : null,
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
               const Expanded(

@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 
 const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
+const glossary = JSON.parse(await readFile("assets/glossary.json", "utf8"));
 const referencedFiles = [
   manifest.background.service_worker,
   manifest.action.default_popup,
@@ -29,6 +30,9 @@ if (manifest.manifest_version !== 3) throw new Error("Manifest V3 is required");
 if (!manifest.permissions.includes("sidePanel")) throw new Error("Side Panel permission is required");
 if (manifest.version !== packageJson.version) {
   throw new Error(`Version mismatch: manifest ${manifest.version}, package ${packageJson.version}`);
+}
+if (glossary.version !== "1.2.1" || glossary.terms.length !== 220) {
+  throw new Error("Bundled glossary 1.2.1 with 220 terms is required");
 }
 const {
   glossaryDraftFilename,

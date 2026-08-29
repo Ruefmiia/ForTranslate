@@ -15,6 +15,11 @@ const resultFontSizeValue = document.querySelector("#result-font-size-value");
 const draftList = document.querySelector("#draft-list");
 const draftCount = document.querySelector("#draft-count");
 const draftStatus = document.querySelector("#draft-status");
+const translationMode = document.querySelector("#translation-mode");
+function showMode() {
+  document.querySelectorAll(".server-setting").forEach((el) => el.hidden = translationMode.value !== "server");
+  document.querySelectorAll(".direct-setting").forEach((el) => el.hidden = translationMode.value !== "direct");
+}
 
 function showResultFontSize() {
   resultFontSizeValue.textContent = `${resultFontSize.value}px`;
@@ -22,22 +27,31 @@ function showResultFontSize() {
 
 async function load() {
   const settings = await chrome.storage.local.get(DEFAULT_SETTINGS);
+  translationMode.value = settings.translationMode;
   form.apiBaseUrl.value = settings.apiBaseUrl;
   form.accessToken.value = settings.accessToken;
+  form.llmBaseUrl.value = settings.llmBaseUrl;
+  form.llmModel.value = settings.llmModel;
+  form.llmApiKey.value = settings.llmApiKey;
   form.requestTimeoutMs.value = settings.requestTimeoutMs;
   resultFontSize.value = settings.resultFontSize;
   showResultFontSize();
   document.querySelector("#save-history").checked = settings.saveHistory;
+  showMode();
 }
 
 async function saveSettings() {
   const apiBaseUrl = normalizeBaseUrl(form.apiBaseUrl.value);
-  if (!/^https?:\/\//i.test(apiBaseUrl)) {
+  if (translationMode.value === "server" && !/^https?:\/\//i.test(apiBaseUrl)) {
     throw new Error("服务地址需要以 http:// 或 https:// 开头");
   }
   await chrome.storage.local.set({
+    translationMode: translationMode.value,
     apiBaseUrl,
     accessToken: form.accessToken.value.trim(),
+    llmBaseUrl: normalizeBaseUrl(form.llmBaseUrl.value),
+    llmModel: form.llmModel.value.trim(),
+    llmApiKey: form.llmApiKey.value.trim(),
     requestTimeoutMs: Number(form.requestTimeoutMs.value),
     resultFontSize: Math.max(12, Math.min(Number(resultFontSize.value) || 13, 18)),
     saveHistory: document.querySelector("#save-history").checked
@@ -76,6 +90,7 @@ document.querySelector("#clear-history").addEventListener("click", async () => {
 });
 
 resultFontSize.addEventListener("input", showResultFontSize);
+translationMode.addEventListener("change", showMode);
 
 function draftField(labelText, name, value, maxLength) {
   const wrapper = document.createElement("label");

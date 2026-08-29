@@ -10,18 +10,22 @@
   <main class="page">
     <div class="brand"><span class="tone" aria-hidden="true">่</span><span>ForTranslation翻译</span></div>
     <h1>连接你的翻译服务</h1>
-    <p class="page-lead">扩展只会发送你主动选择的文字或图片。模型密钥保留在服务器，不写入扩展。</p>
+    <p class="page-lead">可使用服务令牌，或直接连接你自己的 OpenAI 兼容 API。</p>
     <form id="settings-form" class="card">
-      <div class="field">
+      <div class="field"><label for="translation-mode">连接方式</label><select id="translation-mode" name="translationMode"><option value="server">服务令牌</option><option value="direct">自有 API</option></select></div>
+      <div class="field server-setting">
         <label for="api-base-url">服务地址</label>
         <input id="api-base-url" name="apiBaseUrl" type="url" required placeholder="https://你的私有服务地址">
         <div class="help">填写 Tailscale 私有地址或 HTTPS 地址，不包含末尾斜杠。</div>
       </div>
-      <div class="field">
+      <div class="field server-setting">
         <label for="access-token">访问令牌</label>
         <input id="access-token" name="accessToken" type="password" autocomplete="off" placeholder="用于验证当前设备">
         <div class="help">这是你的后端访问令牌，不是大模型 API Key。</div>
       </div>
+      <div class="field direct-setting"><label for="llm-base-url">OpenAI 兼容 API 地址</label><input id="llm-base-url" name="llmBaseUrl" type="url"></div>
+      <div class="field direct-setting"><label for="llm-model">模型名称</label><input id="llm-model" name="llmModel"></div>
+      <div class="field direct-setting"><label for="llm-api-key">API Key</label><input id="llm-api-key" name="llmApiKey" type="password" autocomplete="off"><div class="help">保存在此浏览器；直连时使用内置术语库 1.2.1，本地术语草稿优先。</div></div>
       <div class="field">
         <label for="timeout">请求超时（毫秒）</label>
         <input id="timeout" name="requestTimeoutMs" type="number" min="5000" max="180000" step="1000">
