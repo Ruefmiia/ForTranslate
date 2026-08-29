@@ -20,13 +20,13 @@
       .ft-trigger:hover { transform: translateY(-2px); background: #1d435f; }
       .ft-trigger:focus-visible, button:focus-visible { outline: 3px solid #f4a261; outline-offset: 2px; }
       .ft-panel {
-        position: fixed; z-index: 2147483647; width: min(320px, calc(100vw - 24px));
-        min-width: 260px; min-height: 180px; max-width: calc(100vw - 24px);
-        max-height: calc(100vh - 24px); overflow: auto; resize: both; display: none;
-        background: #fbfcfe; color: #142532; border: 1px solid #cbd8e2; border-radius: 15px;
-        box-shadow: 0 14px 36px rgba(10, 34, 52, .2); font: 13px/1.55 system-ui, "Noto Sans Thai", sans-serif;
+        position: fixed; z-index: 2147483647; width: min(280px, calc(100vw - 24px));
+        min-width: 240px; max-width: min(420px, calc(100vw - 24px));
+        max-height: min(60vh, calc(100vh - 24px)); overflow: auto; resize: both; display: none;
+        background: #fbfcfe; color: #142532; border: 0; border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(10, 34, 52, .14); font: 13px/1.55 system-ui, "Noto Sans Thai", sans-serif;
       }
-      .ft-panel[data-mode="docked"] { box-shadow: 0 10px 30px rgba(10, 34, 52, .18); }
+      .ft-panel[data-mode="docked"] { box-shadow: 0 8px 24px rgba(10, 34, 52, .14); }
       .ft-panel[aria-hidden="false"] { display: block; animation: ft-in 180ms ease-out; }
       .ft-controls { position: absolute; inset: 5px 5px auto 5px; display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
       .ft-control, .ft-copy { border: 0; background: transparent; color: #526775; cursor: pointer; border-radius: 8px; min-width: 32px; min-height: 32px; }
@@ -35,31 +35,27 @@
       .ft-drag:active { cursor: grabbing; }
       .ft-follow { display: none; padding: 0 9px; font-size: 11px; font-weight: 650; }
       .ft-panel[data-mode="manual"] .ft-follow, .ft-panel[data-mode="docked"] .ft-follow { display: block; }
-      .ft-body { padding: 14px; padding-top: 42px; }
-      .ft-label { color: #667b89; font: 650 11px/1.2 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
-      .ft-source { margin: 7px 0 16px; color: #526775; font-size: 12px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-      .ft-result { margin: 6px 0 0; font-size: var(--ft-result-font-size, 13px); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
-      .ft-actions { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .ft-copy { padding: 0 11px; border: 1px solid #cbd8e2; color: #254052; font-weight: 650; }
+      .ft-body { padding: 38px 11px 10px; }
+      .ft-source { padding: 5px 0 2px; color: #526775; font-size: 12px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .ft-result { font-size: var(--ft-result-font-size, 13px); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .ft-meta-row { margin-top: 9px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+      .ft-copy { padding: 0 8px; color: #254052; font-weight: 650; }
       .ft-status { color: #667b89; font-size: 12px; }
-      .ft-error { padding: 12px; border-radius: 12px; background: #fff0eb; color: #942f16; }
-      .ft-loader { display: flex; gap: 6px; align-items: center; color: #526775; }
-      .ft-dot { width: 7px; height: 7px; background: #d45c2d; border-radius: 50%; animation: ft-pulse 900ms infinite alternate; }
-      .ft-dot:nth-child(2) { animation-delay: 180ms; } .ft-dot:nth-child(3) { animation-delay: 360ms; }
-      .ft-details { margin-top: 12px; border-radius: 10px; background: #edf4f7; color: #3c5362; font-size: 12px; }
-      .ft-details summary { min-height: 40px; padding: 10px 12px; cursor: pointer; font-weight: 650; }
-      .ft-notes { padding: 0 12px 12px; white-space: pre-wrap; }
+      .ft-error { padding: 4px 0; color: #942f16; }
+      .ft-loader { padding: 3px 0 5px; color: #526775; }
+      .ft-details, .ft-source-details { color: #526775; font-size: 12px; }
+      .ft-details { flex: 1; min-width: 0; }
+      .ft-source-details { margin-top: 2px; }
+      .ft-details summary, .ft-source-details summary { min-height: 32px; padding: 6px 0; cursor: pointer; font-weight: 650; }
+      .ft-notes { padding: 2px 0 5px 12px; white-space: pre-wrap; }
       @keyframes ft-in { from { opacity: 0; transform: translateY(7px) scale(.98); } }
-      @keyframes ft-pulse { to { opacity: .25; transform: translateY(-2px); } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
     <button class="ft-trigger" type="button" aria-label="翻译选中文字">译</button>
     <section class="ft-panel" role="dialog" aria-label="ForTranslate 翻译结果" aria-hidden="true" data-mode="anchored">
       <div class="ft-controls">
-        <button class="ft-control ft-drag" type="button" aria-label="拖动翻译浮窗；也可用方向键移动" title="拖动浮窗">⋮⋮</button>
+        <button class="ft-control ft-drag" type="button" aria-label="拖动翻译浮窗；方向键移动；双击恢复默认大小" title="拖动；双击恢复默认大小">⋮⋮</button>
         <button class="ft-control ft-follow" type="button">跟随原文</button>
-        <button class="ft-control ft-smaller" type="button" aria-label="缩小翻译浮窗" title="缩小">−</button>
-        <button class="ft-control ft-larger" type="button" aria-label="放大翻译浮窗" title="放大">＋</button>
         <button class="ft-control ft-close" type="button" aria-label="关闭翻译结果" title="关闭">✕</button>
       </div>
       <div class="ft-body"></div>
@@ -73,12 +69,14 @@
   let anchorElement = null;
   let panelMode = "anchored";
   let positionFrame = 0;
+  let resizingPanel = false;
 
-  chrome.storage.local.get({ floatingPanelSize: null, resultFontSize: 13 }).then(({ floatingPanelSize, resultFontSize }) => {
+  chrome.storage.local.remove("floatingPanelSize");
+  chrome.storage.local.get({ floatingPanelSizeV2: null, resultFontSize: 13 }).then(({ floatingPanelSizeV2, resultFontSize }) => {
     panel.style.setProperty("--ft-result-font-size", `${Math.max(12, Math.min(Number(resultFontSize) || 13, 18))}px`);
-    if (!floatingPanelSize) return;
-    panel.style.width = `${Math.max(260, Math.min(floatingPanelSize.width, window.innerWidth - 24))}px`;
-    panel.style.height = `${Math.max(180, Math.min(floatingPanelSize.height, window.innerHeight - 24))}px`;
+    if (!floatingPanelSizeV2) return;
+    panel.style.width = `${Math.max(240, Math.min(floatingPanelSizeV2.width, 420, window.innerWidth - 24))}px`;
+    panel.style.height = `${Math.max(96, Math.min(floatingPanelSizeV2.height, window.innerHeight * .6))}px`;
   });
 
   function readSelection(target = document.activeElement) {
@@ -128,7 +126,7 @@
 
   function hideTrigger() { trigger.style.display = "none"; }
   function hidePanel() { panel.setAttribute("aria-hidden", "true"); }
-  function position(element, rect, width = 320) {
+  function position(element, rect, width = 280) {
     const gap = 10;
     const left = Math.min(Math.max(12, rect.left), window.innerWidth - width - 12);
     const below = rect.bottom + gap;
@@ -158,7 +156,7 @@
     }
     panelMode = "anchored";
     panel.dataset.mode = "anchored";
-    position(panel, rect, panel.offsetWidth || 320);
+    position(panel, rect, panel.offsetWidth || 280);
   }
 
   function schedulePanelPosition() {
@@ -169,35 +167,35 @@
     });
   }
 
-  function setPanelSize(width, height = panel.offsetHeight) {
-    const nextWidth = Math.max(260, Math.min(width, window.innerWidth - 24));
-    const nextHeight = Math.max(180, Math.min(height, window.innerHeight - 24));
-    panel.style.width = `${nextWidth}px`;
-    panel.style.height = `${nextHeight}px`;
-    chrome.storage.local.set({ floatingPanelSize: { width: nextWidth, height: nextHeight } });
-    schedulePanelPosition();
+  function resetPanelSize() {
+    panel.style.removeProperty("width");
+    panel.style.removeProperty("height");
+    chrome.storage.local.remove("floatingPanelSizeV2");
+    panelMode = "anchored";
+    updatePanelPosition();
   }
 
-  function renderLoading(sourceText) {
-    body.innerHTML = `<div class="ft-label">原文</div><div class="ft-source"></div><div class="ft-loader"><span class="ft-dot"></span><span class="ft-dot"></span><span class="ft-dot"></span><span>正在理解语境…</span></div>`;
-    body.querySelector(".ft-source").textContent = sourceText;
+  function renderLoading() {
+    body.innerHTML = `<div class="ft-loader" role="status">正在翻译…</div>`;
     showPanel();
   }
 
   function renderError(message) {
-    body.innerHTML = `<div class="ft-error" role="alert"></div><div class="ft-actions"><span class="ft-status">可在扩展设置中检查服务地址</span></div>`;
+    body.innerHTML = `<div class="ft-error" role="alert"></div><div class="ft-status">请检查扩展设置中的服务地址</div>`;
     body.querySelector(".ft-error").textContent = message;
     showPanel();
   }
 
   function renderResult(result, sourceText) {
-    body.innerHTML = `<div class="ft-label">原文</div><div class="ft-source"></div><div class="ft-label">中文</div><div class="ft-result"></div><details class="ft-details" hidden><summary>解释与说明</summary><div class="ft-notes"></div></details><div class="ft-actions"><span class="ft-status"></span><button class="ft-copy" type="button">复制译文</button></div>`;
-    body.querySelector(".ft-source").textContent = sourceText;
+    body.innerHTML = `<div class="ft-result"></div><div class="ft-meta-row"><details class="ft-details" hidden><summary></summary><div class="ft-notes"></div></details><button class="ft-copy" type="button">复制</button></div><details class="ft-source-details"><summary>查看原文</summary><div class="ft-source"></div></details>`;
     body.querySelector(".ft-result").textContent = result.translation;
+    body.querySelector(".ft-source").textContent = sourceText;
     const notes = [...(result.notes || []), ...(result.uncertainties || [])];
     if (notes.length) {
       const notesNode = body.querySelector(".ft-notes");
-      body.querySelector(".ft-details").hidden = false;
+      const detailsNode = body.querySelector(".ft-details");
+      detailsNode.hidden = false;
+      detailsNode.querySelector("summary").textContent = `解释与说明 ${notes.length} 条`;
       notesNode.textContent = notes.map((item) => typeof item === "string" ? item : item.explanation || item.reason || item.text).filter(Boolean).join(" · ");
     }
     body.querySelector(".ft-copy").addEventListener("click", async (event) => {
@@ -264,19 +262,26 @@
     panel.style.left = `${Math.max(12, Math.min(rect.left + offsets[event.key][0], window.innerWidth - panel.offsetWidth - 12))}px`;
     panel.style.top = `${Math.max(12, Math.min(rect.top + offsets[event.key][1], window.innerHeight - panel.offsetHeight - 12))}px`;
   });
+  dragHandle.addEventListener("dblclick", resetPanelSize);
   shadow.querySelector(".ft-follow").addEventListener("click", () => {
     panelMode = "anchored";
     updatePanelPosition();
   });
-  shadow.querySelector(".ft-smaller").addEventListener("click", () => setPanelSize(panel.offsetWidth - 40, panel.offsetHeight - 40));
-  shadow.querySelector(".ft-larger").addEventListener("click", () => setPanelSize(panel.offsetWidth + 40, panel.offsetHeight + 40));
   shadow.querySelector(".ft-close").addEventListener("click", hidePanel);
+  panel.addEventListener("pointerdown", (event) => {
+    const rect = panel.getBoundingClientRect();
+    resizingPanel = rect.right - event.clientX <= 18 && rect.bottom - event.clientY <= 18;
+  });
+  panel.addEventListener("pointerup", () => {
+    if (!resizingPanel) return;
+    resizingPanel = false;
+    chrome.storage.local.set({ floatingPanelSizeV2: { width: panel.offsetWidth, height: panel.offsetHeight } });
+  });
   document.addEventListener("scroll", schedulePanelPosition, { passive: true, capture: true });
   window.addEventListener("resize", schedulePanelPosition, { passive: true });
   window.visualViewport?.addEventListener("resize", schedulePanelPosition, { passive: true });
   new ResizeObserver(() => {
     if (panel.offsetWidth && panel.offsetHeight) {
-      chrome.storage.local.set({ floatingPanelSize: { width: panel.offsetWidth, height: panel.offsetHeight } });
       if (panelMode === "manual") {
         const rect = panel.getBoundingClientRect();
         panel.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - panel.offsetWidth - 12))}px`;
