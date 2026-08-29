@@ -70,7 +70,7 @@ async function remember(source, translated) {
 translateButton.addEventListener("click", async () => {
   const text = sourceInput.value.trim();
   if (!text) {
-    status.textContent = "请先粘贴需要翻译的泰文";
+    status.textContent = "请先粘贴需要翻译的内容";
     status.className = "status error";
     sourceInput.focus();
     return;

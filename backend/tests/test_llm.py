@@ -36,3 +36,5 @@ def test_openai_compatible_request_and_usage(tmp_path):
     system_prompt = captured["payload"]["messages"][0]["content"]
     assert "Emoji" in system_prompt
     assert "原样、按原顺序保留" in system_prompt
+    assert "自动识别输入语言" in system_prompt
+    assert "英语及其他常见语言" in system_prompt

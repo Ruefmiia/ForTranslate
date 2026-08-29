@@ -45,7 +45,7 @@ def auth():
 
 def test_authentication_and_health(tmp_path):
     with make_client(tmp_path)[0] as client:
-        assert client.app.version == "0.2.1"
+        assert client.app.version == "0.3.0"
         assert client.get("/health").status_code == 401
         assert client.get("/health", headers=auth()).json() == {"status": "ok"}
         preflight = client.options(
@@ -60,6 +60,24 @@ def test_authentication_and_health(tmp_path):
         assert preflight.status_code == 200
         assert preflight.headers["access-control-allow-origin"] == "*"
         assert preflight.headers["access-control-allow-private-network"] == "true"
+
+
+def test_individual_access_tokens_can_be_managed(tmp_path):
+    client, _ = make_client(tmp_path)
+    with client:
+        record, token = client.app.state.database.create_access_token("Android 测试用户")
+        individual_auth = {"Authorization": f"Bearer {token}"}
+        assert client.get("/health", headers=individual_auth).json() == {"status": "ok"}
+        listed = client.app.state.database.list_access_tokens()
+        assert listed[0]["name"] == "Android 测试用户"
+        assert listed[0]["last_used_at"] is not None
+        assert "token_hash" not in listed[0]
+        assert client.app.state.database.set_access_token_enabled(record["id"], False)
+        assert client.get("/health", headers=individual_auth).status_code == 401
+        assert client.app.state.database.set_access_token_enabled(record["id"], True)
+        assert client.get("/health", headers=individual_auth).status_code == 200
+        assert client.app.state.database.revoke_access_token(record["id"])
+        assert client.get("/health", headers=individual_auth).status_code == 401
 
 
 def test_glossary_is_injected_and_usage_is_recorded(tmp_path):

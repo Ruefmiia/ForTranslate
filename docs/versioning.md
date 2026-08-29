@@ -1,15 +1,16 @@
 # 版本管理规范
 
-ForTranslate 是多组件仓库，浏览器扩展与后端独立发布、独立升级。
+ForTranslate 是多组件仓库，浏览器扩展、后端与移动端独立发布、独立升级。
 
 ## 当前版本
 
 | 组件 | 当前版本 | 唯一版本源 | Git 标签 |
 |---|---:|---|---|
-| 浏览器扩展 | 0.4.2 | `browser-extension/manifest.json` | `extension-v0.4.2` |
-| 后端 | 0.2.1 | `backend/fortranslate_backend/version.py` | `backend-v0.2.1` |
+| 浏览器扩展 | 0.5.0 | `browser-extension/manifest.json` | `extension-v0.5.0` |
+| 后端 | 0.3.0 | `backend/fortranslate_backend/version.py` | `backend-v0.3.0` |
+| Android App | 0.1.0 | `mobile-app/pubspec.yaml` | `mobile-v0.1.0` |
 
-扩展的 `package.json` 必须与 `manifest.json` 一致，`npm run check` 会检查这一点。后端 FastAPI 元数据直接读取 `version.py`，测试会校验版本。
+扩展的 `package.json` 必须与 `manifest.json` 一致，`npm run check` 会检查这一点。后端 FastAPI 元数据直接读取 `version.py`，测试会校验版本。移动端的 Android `versionName` 与 `versionCode` 由 `pubspec.yaml` 的 `version` 生成。
 
 ## 版本规则
 
@@ -25,6 +26,7 @@ ForTranslate 是多组件仓库，浏览器扩展与后端独立发布、独立�
 
 - 扩展代码、权限、界面、交互、设置结构或发布包内容变化。
 - 后端接口、认证、配置项、数据库行为、模型请求或返回结构变化。
+- 移动端功能、界面、设置、权限、依赖或安装包内容变化。
 - 会改变用户可见行为、兼容性、部署要求或安全边界的修复。
 
 ## 发布流程
@@ -34,16 +36,16 @@ ForTranslate 是多组件仓库，浏览器扩展与后端独立发布、独立�
 3. 更新 `CHANGELOG.md`，写明日期和用户可见变化。
 4. 运行后端测试与扩展检查。
 5. 提交并推送代码。
-6. 为实际发布的组件创建带注释标签，格式为 `backend-vX.Y.Z` 或 `extension-vX.Y.Z`。
+6. 为实际发布的组件创建带注释标签，格式为 `backend-vX.Y.Z`、`extension-vX.Y.Z` 或 `mobile-vX.Y.Z`。
 
 标签一旦推送不得移动或复用；修复后必须发布更高版本。
 
 ## 规划
 
-| 阶段 | 扩展方向 | 后端方向 |
-|---|---|---|
-| 0.2.x | 版本展示、更新说明、文本模式明确化 | CSV/XLSX 术语批量导入、独立用户令牌 |
-| 0.3.x | 术语管理入口、连接诊断 | 文档知识库摄取与检索、管理接口 |
-| 1.0.0 | 稳定分发与自动更新 | 稳定 API、迁移机制、备份恢复与运维文档 |
+| 阶段 | 扩展方向 | 后端方向 | 移动端方向 |
+|---|---|---|---|
+| 0.2.x | 版本展示、更新说明 | 令牌运维完善 | Android 分享菜单与“处理文字”入口 |
+| 0.3.x | 术语管理入口、连接诊断 | 文档知识库摄取与检索 | 本地历史与术语草稿 |
+| 1.0.0 | 稳定分发与自动更新 | 稳定 API、迁移机制、备份恢复 | 长期发布签名与稳定分发 |
 
 规划版本不代表承诺发布日期；实际版本由届时的兼容性影响决定。

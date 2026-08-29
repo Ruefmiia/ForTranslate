@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ForTranslate 泰语翻译",
-  "description": "面向泰娱内容的泰语自然中文翻译工具。",
-  "version": "0.4.2",
+  "name": "ForTranslate 多语种翻译",
+  "description": "以泰语和泰娱内容为重点，支持英语及其他常见语言的自然中文翻译工具。",
+  "version": "0.5.0",
   "permissions": ["contextMenus", "scripting", "sidePanel", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {

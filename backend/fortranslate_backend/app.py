@@ -83,10 +83,10 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     app.state.settings = settings
 
     def authenticate(authorization: str | None = Header(default=None)) -> None:
-        if not settings.access_token:
-            raise HTTPException(status_code=503, detail="Access token is not configured")
         scheme, _, token = (authorization or "").partition(" ")
-        if scheme.lower() != "bearer" or not hmac.compare_digest(token, settings.access_token):
+        legacy_match = bool(settings.access_token) and hmac.compare_digest(token, settings.access_token)
+        database_match = database.authenticate_access_token(token) if scheme.lower() == "bearer" else None
+        if scheme.lower() != "bearer" or not (legacy_match or database_match):
             raise HTTPException(
                 status_code=401,
                 detail="Invalid or missing access token",
