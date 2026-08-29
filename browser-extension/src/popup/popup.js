@@ -8,6 +8,11 @@ const result = document.querySelector("#result");
 const resultText = document.querySelector("#result-text");
 const usage = document.querySelector("#usage");
 
+getSettings().then((settings) => {
+  const fontSize = Math.max(12, Math.min(Number(settings.resultFontSize) || 13, 18));
+  document.documentElement.style.setProperty("--result-font-size", `${fontSize}px`);
+});
+
 document.querySelector("#version").textContent = `v${chrome.runtime.getManifest().version}`;
 
 document.querySelector("#open-settings").addEventListener("click", () => chrome.runtime.openOptionsPage());

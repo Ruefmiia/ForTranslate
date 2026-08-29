@@ -3,12 +3,20 @@ import { testConnection } from "../lib/api.js";
 
 const form = document.querySelector("#settings-form");
 const status = document.querySelector("#status");
+const resultFontSize = document.querySelector("#result-font-size");
+const resultFontSizeValue = document.querySelector("#result-font-size-value");
+
+function showResultFontSize() {
+  resultFontSizeValue.textContent = `${resultFontSize.value}px`;
+}
 
 async function load() {
   const settings = await chrome.storage.local.get(DEFAULT_SETTINGS);
   form.apiBaseUrl.value = settings.apiBaseUrl;
   form.accessToken.value = settings.accessToken;
   form.requestTimeoutMs.value = settings.requestTimeoutMs;
+  resultFontSize.value = settings.resultFontSize;
+  showResultFontSize();
   document.querySelector("#save-history").checked = settings.saveHistory;
 }
 
@@ -21,6 +29,7 @@ async function saveSettings() {
     apiBaseUrl,
     accessToken: form.accessToken.value.trim(),
     requestTimeoutMs: Number(form.requestTimeoutMs.value),
+    resultFontSize: Math.max(12, Math.min(Number(resultFontSize.value) || 13, 18)),
     saveHistory: document.querySelector("#save-history").checked
   });
 }
@@ -55,5 +64,7 @@ document.querySelector("#clear-history").addEventListener("click", async () => {
   await chrome.storage.local.remove("history");
   showStatus("最近翻译已清空");
 });
+
+resultFontSize.addEventListener("input", showResultFontSize);
 
 load();

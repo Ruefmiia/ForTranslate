@@ -38,7 +38,7 @@
       .ft-body { padding: 14px; padding-top: 42px; }
       .ft-label { color: #667b89; font: 650 11px/1.2 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
       .ft-source { margin: 7px 0 16px; color: #526775; font-size: 12px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-      .ft-result { margin: 6px 0 0; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .ft-result { margin: 6px 0 0; font-size: var(--ft-result-font-size, 13px); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
       .ft-actions { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
       .ft-copy { padding: 0 11px; border: 1px solid #cbd8e2; color: #254052; font-weight: 650; }
       .ft-status { color: #667b89; font-size: 12px; }
@@ -74,7 +74,8 @@
   let panelMode = "anchored";
   let positionFrame = 0;
 
-  chrome.storage.local.get({ floatingPanelSize: null }).then(({ floatingPanelSize }) => {
+  chrome.storage.local.get({ floatingPanelSize: null, resultFontSize: 13 }).then(({ floatingPanelSize, resultFontSize }) => {
+    panel.style.setProperty("--ft-result-font-size", `${Math.max(12, Math.min(Number(resultFontSize) || 13, 18))}px`);
     if (!floatingPanelSize) return;
     panel.style.width = `${Math.max(260, Math.min(floatingPanelSize.width, window.innerWidth - 24))}px`;
     panel.style.height = `${Math.max(180, Math.min(floatingPanelSize.height, window.innerHeight - 24))}px`;
@@ -86,7 +87,20 @@
       const end = target.selectionEnd ?? 0;
       return target.value.slice(start, end).trim();
     }
-    return window.getSelection()?.toString().trim() || "";
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return "";
+    const fragment = selection.getRangeAt(0).cloneContents();
+    fragment.querySelectorAll("img[alt], [role='img'][aria-label]").forEach((node) => {
+      const replacement = node.getAttribute("alt") || node.getAttribute("aria-label") || "";
+      node.replaceWith(document.createTextNode(replacement));
+    });
+    const container = document.createElement("div");
+    container.style.cssText = "position:fixed;left:-100000px;top:0;visibility:hidden;white-space:pre-wrap";
+    container.appendChild(fragment);
+    document.body.appendChild(container);
+    const text = container.innerText.trim();
+    container.remove();
+    return text || selection.toString().trim();
   }
 
   function selectionRect(target) {
@@ -271,6 +285,11 @@
       schedulePanelPosition();
     }
   }).observe(panel);
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local" || !changes.resultFontSize) return;
+    const fontSize = Math.max(12, Math.min(Number(changes.resultFontSize.newValue) || 13, 18));
+    panel.style.setProperty("--ft-result-font-size", `${fontSize}px`);
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") { hideTrigger(); hidePanel(); }
   });

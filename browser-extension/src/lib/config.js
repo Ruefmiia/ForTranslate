@@ -2,6 +2,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   apiBaseUrl: "http://127.0.0.1:8787",
   accessToken: "",
   requestTimeoutMs: 60000,
+  resultFontSize: 13,
   saveHistory: true
 });
 
