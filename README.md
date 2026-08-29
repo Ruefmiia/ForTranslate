@@ -6,8 +6,8 @@
 
 | 组件 | 版本 |
 |---|---:|
-| 浏览器扩展 | 0.2.1 |
-| 轻量后端 | 0.2.0 |
+| 浏览器扩展 | 0.2.2 |
+| 轻量后端 | 0.2.1 |
 
 版本规则与发布流程见 [docs/versioning.md](docs/versioning.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
 

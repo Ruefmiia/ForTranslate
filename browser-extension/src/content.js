@@ -20,21 +20,19 @@
       .ft-trigger:hover { transform: translateY(-2px); background: #1d435f; }
       .ft-trigger:focus-visible, button:focus-visible { outline: 3px solid #f4a261; outline-offset: 2px; }
       .ft-panel {
-        position: fixed; z-index: 2147483647; width: min(380px, calc(100vw - 24px));
-        max-height: min(520px, calc(100vh - 24px)); overflow: auto; display: none;
-        background: #fbfcfe; color: #142532; border: 1px solid #cbd8e2; border-radius: 20px;
-        box-shadow: 0 22px 64px rgba(10, 34, 52, .24); font: 14px/1.6 system-ui, "Noto Sans Thai", sans-serif;
+        position: fixed; z-index: 2147483647; width: min(320px, calc(100vw - 24px));
+        max-height: min(440px, calc(100vh - 24px)); overflow: auto; display: none;
+        background: #fbfcfe; color: #142532; border: 1px solid #cbd8e2; border-radius: 15px;
+        box-shadow: 0 14px 36px rgba(10, 34, 52, .2); font: 13px/1.55 system-ui, "Noto Sans Thai", sans-serif;
       }
       .ft-panel[aria-hidden="false"] { display: block; animation: ft-in 180ms ease-out; }
-      .ft-head { padding: 14px 16px 11px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e9ef; }
-      .ft-brand { display: flex; gap: 9px; align-items: center; font-weight: 750; letter-spacing: -.01em; }
-      .ft-mark { color: #d45c2d; font-size: 18px; line-height: 1; transform: translateY(-2px); }
       .ft-close, .ft-copy { border: 0; background: transparent; color: #526775; cursor: pointer; border-radius: 9px; min-width: 36px; min-height: 36px; }
+      .ft-close { position: absolute; top: 6px; right: 6px; }
       .ft-close:hover, .ft-copy:hover { background: #edf2f5; color: #142532; }
-      .ft-body { padding: 16px; }
+      .ft-body { padding: 14px; padding-top: 42px; }
       .ft-label { color: #667b89; font: 650 11px/1.2 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
       .ft-source { margin: 7px 0 16px; color: #526775; font-size: 12px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-      .ft-result { margin: 7px 0 0; font-size: 16px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .ft-result { margin: 6px 0 0; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
       .ft-actions { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
       .ft-copy { padding: 0 11px; border: 1px solid #cbd8e2; color: #254052; font-weight: 650; }
       .ft-status { color: #667b89; font-size: 12px; }
@@ -42,17 +40,16 @@
       .ft-loader { display: flex; gap: 6px; align-items: center; color: #526775; }
       .ft-dot { width: 7px; height: 7px; background: #d45c2d; border-radius: 50%; animation: ft-pulse 900ms infinite alternate; }
       .ft-dot:nth-child(2) { animation-delay: 180ms; } .ft-dot:nth-child(3) { animation-delay: 360ms; }
-      .ft-notes { margin: 15px 0 0; padding: 12px 12px 12px 28px; background: #edf4f7; border-radius: 12px; color: #3c5362; font-size: 12px; }
+      .ft-details { margin-top: 12px; border-radius: 10px; background: #edf4f7; color: #3c5362; font-size: 12px; }
+      .ft-details summary { min-height: 40px; padding: 10px 12px; cursor: pointer; font-weight: 650; }
+      .ft-notes { padding: 0 12px 12px; white-space: pre-wrap; }
       @keyframes ft-in { from { opacity: 0; transform: translateY(7px) scale(.98); } }
       @keyframes ft-pulse { to { opacity: .25; transform: translateY(-2px); } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
     <button class="ft-trigger" type="button" aria-label="翻译选中文字">译</button>
     <section class="ft-panel" role="dialog" aria-label="ForTranslate 翻译结果" aria-hidden="true">
-      <header class="ft-head">
-        <div class="ft-brand"><span class="ft-mark" aria-hidden="true">่</span><span>ForTranslate</span></div>
-        <button class="ft-close" type="button" aria-label="关闭翻译结果">✕</button>
-      </header>
+      <button class="ft-close" type="button" aria-label="关闭翻译结果">✕</button>
       <div class="ft-body"></div>
     </section>`;
 
@@ -78,11 +75,11 @@
 
   function hideTrigger() { trigger.style.display = "none"; }
   function hidePanel() { panel.setAttribute("aria-hidden", "true"); }
-  function position(element, rect, width = 380) {
+  function position(element, rect, width = 320) {
     const gap = 10;
     const left = Math.min(Math.max(12, rect.left), window.innerWidth - width - 12);
     const below = rect.bottom + gap;
-    const top = below + 250 < window.innerHeight ? below : Math.max(12, rect.top - 270);
+    const top = below + 220 < window.innerHeight ? below : Math.max(12, rect.top - 230);
     element.style.left = `${left}px`;
     element.style.top = `${top}px`;
   }
@@ -107,13 +104,13 @@
   }
 
   function renderResult(result, sourceText) {
-    body.innerHTML = `<div class="ft-label">原文</div><div class="ft-source"></div><div class="ft-label">自然中文</div><div class="ft-result"></div><div class="ft-notes" hidden></div><div class="ft-actions"><span class="ft-status"></span><button class="ft-copy" type="button">复制译文</button></div>`;
+    body.innerHTML = `<div class="ft-label">原文</div><div class="ft-source"></div><div class="ft-label">中文</div><div class="ft-result"></div><details class="ft-details" hidden><summary>解释与说明</summary><div class="ft-notes"></div></details><div class="ft-actions"><span class="ft-status"></span><button class="ft-copy" type="button">复制译文</button></div>`;
     body.querySelector(".ft-source").textContent = sourceText;
     body.querySelector(".ft-result").textContent = result.translation;
     const notes = [...(result.notes || []), ...(result.uncertainties || [])];
     if (notes.length) {
       const notesNode = body.querySelector(".ft-notes");
-      notesNode.hidden = false;
+      body.querySelector(".ft-details").hidden = false;
       notesNode.textContent = notes.map((item) => typeof item === "string" ? item : item.explanation || item.reason || item.text).filter(Boolean).join(" · ");
     }
     body.querySelector(".ft-copy").addEventListener("click", async (event) => {

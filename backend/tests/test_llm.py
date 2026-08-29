@@ -33,3 +33,6 @@ def test_openai_compatible_request_and_usage(tmp_path):
     assert captured["payload"]["model"] == "demo"
     assert captured["payload"]["response_format"] == {"type": "json_object"}
     assert captured["payload"]["thinking"] == {"type": "disabled"}
+    system_prompt = captured["payload"]["messages"][0]["content"]
+    assert "Emoji" in system_prompt
+    assert "原样、按原顺序保留" in system_prompt
