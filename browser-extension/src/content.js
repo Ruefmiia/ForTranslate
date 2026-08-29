@@ -61,6 +61,21 @@
   const body = shadow.querySelector(".ft-body");
   let selectedText = "";
 
+  function readSelection(target = document.activeElement) {
+    if (target instanceof HTMLTextAreaElement || (target instanceof HTMLInputElement && /^(text|search|url|tel|email)$/i.test(target.type))) {
+      const start = target.selectionStart ?? 0;
+      const end = target.selectionEnd ?? 0;
+      return target.value.slice(start, end).trim();
+    }
+    return window.getSelection()?.toString().trim() || "";
+  }
+
+  function selectionRect(target) {
+    if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) return target.getBoundingClientRect();
+    const selection = window.getSelection();
+    return selection?.rangeCount ? selection.getRangeAt(0).getBoundingClientRect() : target.getBoundingClientRect();
+  }
+
   function hideTrigger() { trigger.style.display = "none"; }
   function hidePanel() { panel.setAttribute("aria-hidden", "true"); }
   function position(element, rect, width = 380) {
@@ -111,11 +126,10 @@
   document.addEventListener("mouseup", (event) => {
     if (host.contains(event.target)) return;
     setTimeout(() => {
-      const selection = window.getSelection();
-      const text = selection?.toString().trim();
+      const text = readSelection(event.target);
       if (!text || text.length > 10000) return hideTrigger();
       selectedText = text;
-      const rect = selection.getRangeAt(0).getBoundingClientRect();
+      const rect = selectionRect(event.target);
       position(trigger, rect, 42);
       trigger.style.display = "grid";
     }, 0);
@@ -137,7 +151,7 @@
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === "GET_SELECTION") {
-      sendResponse({ text: window.getSelection()?.toString().trim() || "" });
+      sendResponse({ text: readSelection() });
     } else if (message.type === "TRANSLATION_LOADING") {
       renderLoading(message.sourceText);
     } else if (message.type === "TRANSLATION_SUCCESS") {

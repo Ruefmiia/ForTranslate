@@ -8,6 +8,8 @@ const result = document.querySelector("#result");
 const resultText = document.querySelector("#result-text");
 const usage = document.querySelector("#usage");
 
+document.querySelector("#version").textContent = `v${chrome.runtime.getManifest().version}`;
+
 document.querySelector("#open-settings").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
 async function remember(source, translated) {
@@ -28,7 +30,7 @@ translateButton.addEventListener("click", async () => {
   }
 
   translateButton.disabled = true;
-  translateButton.textContent = "正在理解语境…";
+  translateButton.textContent = "翻译中…";
   status.textContent = "";
   status.className = "status";
   result.hidden = true;
@@ -45,7 +47,7 @@ translateButton.addEventListener("click", async () => {
     status.className = "status error";
   } finally {
     translateButton.disabled = false;
-    translateButton.textContent = "翻译成自然中文";
+    translateButton.textContent = "翻译";
   }
 });
 

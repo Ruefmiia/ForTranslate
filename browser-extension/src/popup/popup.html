@@ -9,15 +9,16 @@
 <body>
   <main class="shell">
     <div class="topline">
-      <div class="brand"><span class="tone" aria-hidden="true">่</span><span>ForTranslate</span></div>
+      <div class="brand"><span class="tone" aria-hidden="true">่</span><span>ForTranslate</span><span id="version" class="version"></span></div>
       <button id="open-settings" class="quiet-button" type="button">设置</button>
     </div>
-    <p class="intro">粘贴泰文，或在网页中选中文字后点击“译”。</p>
     <div class="field">
       <label for="source-text">泰语原文</label>
       <textarea id="source-text" maxlength="10000" placeholder="在这里粘贴需要翻译的内容…"></textarea>
     </div>
-    <button id="translate" class="primary" type="button">翻译成自然中文</button>
+    <div class="translate-actions">
+      <button id="translate" class="primary" type="button">翻译</button>
+    </div>
     <div id="status" class="status" role="status" aria-live="polite"></div>
     <section id="result" class="result" hidden aria-label="翻译结果">
       <div class="result-label">自然中文</div>
@@ -27,8 +28,6 @@
         <button id="copy" class="quiet-button" type="button">复制译文</button>
       </div>
     </section>
-    <div class="divider"></div>
-    <div class="shortcut"><span>快捷键翻译当前选区</span><kbd>Alt + Shift + T</kbd></div>
   </main>
   <script type="module" src="popup.js"></script>
 </body>

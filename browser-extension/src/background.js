@@ -3,6 +3,39 @@ import { getSettings } from "./lib/config.js";
 
 const MENU_SELECTION = "fortranslate-selection";
 const MENU_IMAGE = "fortranslate-image";
+const WORKSPACE_PATH = "src/popup/popup.html";
+
+async function injectContentScript(tabId) {
+  if (!tabId) return false;
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["src/content.js"] });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function openWorkspace(sourceTab) {
+  await injectContentScript(sourceTab?.id);
+  const { workspaceTabId } = await chrome.storage.session.get("workspaceTabId");
+  if (workspaceTabId) {
+    try {
+      await chrome.tabs.update(workspaceTabId, { active: true });
+      return;
+    } catch {
+      await chrome.storage.session.remove("workspaceTabId");
+    }
+  }
+  const tab = await chrome.tabs.create({ url: chrome.runtime.getURL(WORKSPACE_PATH) });
+  await chrome.storage.session.set({ workspaceTabId: tab.id });
+}
+
+chrome.action.onClicked.addListener(openWorkspace);
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const { workspaceTabId } = await chrome.storage.session.get("workspaceTabId");
+  if (tabId === workspaceTabId) await chrome.storage.session.remove("workspaceTabId");
+});
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
@@ -17,6 +50,7 @@ chrome.runtime.onInstalled.addListener(() => {
       contexts: ["image"]
     });
   });
+  chrome.tabs.query({}).then((tabs) => Promise.all(tabs.map((tab) => injectContentScript(tab.id))));
 });
 
 async function saveHistory(source, result, kind) {
@@ -66,18 +100,24 @@ async function runImageTranslation(imageUrl, tabId) {
   }
 }
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === MENU_SELECTION && info.selectionText) {
+    await injectContentScript(tab?.id);
     runTextTranslation(info.selectionText.trim(), tab?.id).catch(() => {});
   }
   if (info.menuItemId === MENU_IMAGE && info.srcUrl) {
+    await injectContentScript(tab?.id);
     runImageTranslation(info.srcUrl, tab?.id);
   }
 });
 
 chrome.commands.onCommand.addListener(async (command, tab) => {
   if (command !== "translate-selection" || !tab?.id) return;
-  const response = await chrome.tabs.sendMessage(tab.id, { type: "GET_SELECTION" }).catch(() => null);
+  let response = await chrome.tabs.sendMessage(tab.id, { type: "GET_SELECTION" }).catch(() => null);
+  if (!response) {
+    const injected = await injectContentScript(tab.id);
+    if (injected) response = await chrome.tabs.sendMessage(tab.id, { type: "GET_SELECTION" }).catch(() => null);
+  }
   if (response?.text) runTextTranslation(response.text, tab.id).catch(() => {});
 });
 

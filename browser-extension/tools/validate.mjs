@@ -8,7 +8,7 @@ const referencedFiles = [
   manifest.action.default_popup,
   manifest.options_page,
   ...manifest.content_scripts.flatMap((entry) => entry.js)
-];
+].filter(Boolean);
 
 for (const file of referencedFiles) await access(file);
 

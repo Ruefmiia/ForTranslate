@@ -2,16 +2,15 @@
   "manifest_version": 3,
   "name": "ForTranslate 泰语翻译",
   "description": "面向泰娱内容的泰语自然中文翻译工具。",
-  "version": "0.1.0",
-  "permissions": ["contextMenus", "storage"],
+  "version": "0.2.0",
+  "permissions": ["contextMenus", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "ForTranslate",
-    "default_popup": "src/popup/popup.html"
+    "default_title": "打开 ForTranslate"
   },
   "options_page": "src/options/options.html",
   "content_scripts": [

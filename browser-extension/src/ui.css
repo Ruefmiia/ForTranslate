@@ -22,30 +22,31 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
   outline: 3px solid #f4a261;
   outline-offset: 2px;
 }
-.shell { padding: 20px; }
+.shell { width: min(100%, 720px); margin: 0 auto; padding: 28px 24px 48px; }
 .topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 9px; font-weight: 780; font-size: 16px; letter-spacing: -.02em; }
+.version { color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: 0; }
 .tone { color: var(--tamarind); font-size: 21px; line-height: 1; transform: translateY(-2px); }
 .quiet-button, .icon-button {
   min-height: 40px; border: 1px solid var(--line); border-radius: 11px;
   color: #304a5a; background: #fff; padding: 0 12px;
 }
 .quiet-button:hover, .icon-button:hover { background: var(--mist); }
-.intro { margin: 18px 0; color: var(--muted); font-size: 12px; }
 .field { display: grid; gap: 7px; margin: 16px 0; }
 .field label, .field-title { font-weight: 700; color: #304a5a; font-size: 12px; }
 textarea, input[type="url"], input[type="password"], input[type="number"] {
   width: 100%; border: 1px solid #bfcdd7; border-radius: 12px; padding: 11px 12px;
   background: #fff; color: var(--ink); transition: border-color 160ms ease, box-shadow 160ms ease;
 }
-textarea { resize: vertical; min-height: 110px; }
+textarea { resize: vertical; min-height: 180px; }
 textarea:focus, input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(21,50,74,.09); }
 .primary {
-  width: 100%; min-height: 46px; border: 0; border-radius: 13px; background: var(--navy);
+  min-height: 44px; border: 0; border-radius: 11px; padding: 0 24px; background: var(--navy);
   color: #fff; font-weight: 760; transition: transform 160ms ease, background 160ms ease;
 }
 .primary:hover { background: var(--navy-hover); transform: translateY(-1px); }
 .primary:disabled { opacity: .55; cursor: wait; transform: none; }
+.translate-actions { display: flex; justify-content: flex-end; }
 .result { margin-top: 16px; padding: 15px; border-radius: 15px; background: var(--mist); }
 .result[hidden] { display: none; }
 .result-label { color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .08em; }
