@@ -21,7 +21,7 @@
       .ft-trigger:focus-visible, button:focus-visible { outline: 3px solid #f4a261; outline-offset: 2px; }
       .ft-panel {
         position: fixed; z-index: 2147483647; width: min(280px, calc(100vw - 24px));
-        min-width: 240px; max-width: min(420px, calc(100vw - 24px));
+        min-width: 240px; max-width: calc(100vw - 24px);
         max-height: min(60vh, calc(100vh - 24px)); overflow: auto; resize: both; display: none;
         background: #fbfcfe; color: #142532; border: 0; border-radius: 12px;
         box-shadow: 0 8px 24px rgba(10, 34, 52, .14); font: 13px/1.55 system-ui, "Noto Sans Thai", sans-serif;
@@ -75,7 +75,7 @@
   chrome.storage.local.get({ floatingPanelSizeV2: null, resultFontSize: 13 }).then(({ floatingPanelSizeV2, resultFontSize }) => {
     panel.style.setProperty("--ft-result-font-size", `${Math.max(12, Math.min(Number(resultFontSize) || 13, 18))}px`);
     if (!floatingPanelSizeV2) return;
-    panel.style.width = `${Math.max(240, Math.min(floatingPanelSizeV2.width, 420, window.innerWidth - 24))}px`;
+    panel.style.width = `${Math.max(240, Math.min(floatingPanelSizeV2.width, window.innerWidth - 24))}px`;
     panel.style.height = `${Math.max(96, Math.min(floatingPanelSizeV2.height, window.innerHeight * .6))}px`;
   });
 

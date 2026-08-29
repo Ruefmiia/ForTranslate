@@ -6,7 +6,7 @@ ForTranslate 是多组件仓库，浏览器扩展与后端独立发布、独立�
 
 | 组件 | 当前版本 | 唯一版本源 | Git 标签 |
 |---|---:|---|---|
-| 浏览器扩展 | 0.4.1 | `browser-extension/manifest.json` | `extension-v0.4.1` |
+| 浏览器扩展 | 0.4.2 | `browser-extension/manifest.json` | `extension-v0.4.2` |
 | 后端 | 0.2.1 | `backend/fortranslate_backend/version.py` | `backend-v0.2.1` |
 
 扩展的 `package.json` 必须与 `manifest.json` 一致，`npm run check` 会检查这一点。后端 FastAPI 元数据直接读取 `version.py`，测试会校验版本。
