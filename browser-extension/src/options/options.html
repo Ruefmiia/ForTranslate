@@ -49,6 +49,18 @@
       </div>
       <div id="status" class="status" role="status" aria-live="polite"></div>
     </form>
+    <section class="card" aria-labelledby="drafts-title">
+      <div class="section-heading options-heading">
+        <div>
+          <h2 id="drafts-title">术语草稿</h2>
+          <p class="help">草稿不会直接修改服务器术语库。审核后导出 CSV，再按现有流程合并和上传。</p>
+        </div>
+        <button id="export-drafts" class="quiet-button" type="button">导出 CSV</button>
+      </div>
+      <div id="draft-count" class="status"></div>
+      <div id="draft-list" class="draft-list"></div>
+      <div id="draft-status" class="status" role="status" aria-live="polite"></div>
+    </section>
   </main>
   <script type="module" src="options.js"></script>
 </body>

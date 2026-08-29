@@ -10,7 +10,10 @@
   <main class="shell">
     <div class="topline">
       <div class="brand"><span class="tone" aria-hidden="true">่</span><span>ForTranslate</span><span id="version" class="version"></span></div>
-      <button id="open-settings" class="quiet-button" type="button">设置</button>
+      <div class="top-actions">
+        <button id="record-term" class="quiet-button" type="button">记术语</button>
+        <button id="open-settings" class="quiet-button" type="button">设置</button>
+      </div>
     </div>
     <div class="field">
       <label for="source-text">泰语原文</label>
@@ -25,9 +28,35 @@
       <div id="result-text" class="result-text"></div>
       <div class="result-row">
         <span id="usage" class="status"></span>
-        <button id="copy" class="quiet-button" type="button">复制译文</button>
+        <div class="result-actions">
+          <button id="record-result-term" class="quiet-button" type="button">记录术语</button>
+          <button id="copy" class="quiet-button" type="button">复制译文</button>
+        </div>
       </div>
     </section>
+    <form id="term-form" class="draft-entry" hidden>
+      <div class="section-heading">
+        <strong>记录术语草稿</strong>
+        <span>仅保存在当前浏览器</span>
+      </div>
+      <div class="field compact-field">
+        <label for="term-source">原词 source</label>
+        <input id="term-source" name="source" type="text" maxlength="200" required>
+      </div>
+      <div class="field compact-field">
+        <label for="term-target">中文 target</label>
+        <input id="term-target" name="target" type="text" maxlength="200" required>
+      </div>
+      <div class="field compact-field">
+        <label for="term-note">说明 note</label>
+        <textarea id="term-note" name="note" class="compact-textarea" maxlength="500"></textarea>
+      </div>
+      <div class="actions compact-actions">
+        <button class="primary" type="submit">暂存</button>
+        <button id="cancel-term" class="quiet-button" type="button">取消</button>
+      </div>
+      <div id="term-status" class="status" role="status" aria-live="polite"></div>
+    </form>
   </main>
   <script type="module" src="popup.js"></script>
 </body>
