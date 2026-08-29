@@ -1,6 +1,6 @@
 # ForTranslate 轻量后端
 
-FastAPI + SQLite 实现的私有多语种中文翻译服务，以泰语和泰娱内容为重点，兼容浏览器扩展和手机端，并可连接任何实现 OpenAI Chat Completions 协议的模型服务。
+FastAPI + SQLite 实现的私有中文翻译服务，以泰语和泰娱内容为重点，兼容浏览器扩展和手机端，并可连接任何实现 OpenAI Chat Completions 协议的模型服务。
 
 ## 启动
 

@@ -2,6 +2,14 @@
 
 本项目按组件独立记录版本。版本格式遵循 Semantic Versioning。
 
+## Mobile 0.1.1 - 2026-08-29
+
+- 用户可见名称统一为“ForTranslation翻译”，不再强调“多语种”。
+
+## Extension 0.5.1 - 2026-08-29
+
+- 扩展名称、标题和无障碍标签统一为“ForTranslation翻译”，不再显示“多语种翻译”。
+
 ## Mobile 0.1.0 - 2026-08-29
 
 - 新增 Flutter Android App，支持输入、粘贴、多语种自然中文翻译和译文复制。

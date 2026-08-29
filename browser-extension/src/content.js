@@ -52,7 +52,7 @@
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
     <button class="ft-trigger" type="button" aria-label="翻译选中文字">译</button>
-    <section class="ft-panel" role="dialog" aria-label="ForTranslate 翻译结果" aria-hidden="true" data-mode="anchored">
+    <section class="ft-panel" role="dialog" aria-label="ForTranslation翻译结果" aria-hidden="true" data-mode="anchored">
       <div class="ft-controls">
         <button class="ft-control ft-drag" type="button" aria-label="拖动翻译浮窗；方向键移动；双击恢复默认大小" title="拖动；双击恢复默认大小">⋮⋮</button>
         <button class="ft-control ft-follow" type="button">跟随原文</button>

@@ -22,7 +22,7 @@ class ForTranslateApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'ForTranslate',
+    title: 'ForTranslation翻译',
     theme: ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
@@ -144,7 +144,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
       title: const Row(
         children: [
           Text(
-            'ForTranslate',
+            'ForTranslation翻译',
             style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.4),
           ),
           SizedBox(width: 6),
@@ -232,7 +232,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
         minLines: 7,
         maxLines: 14,
         textInputAction: TextInputAction.newline,
-        decoration: const InputDecoration(hintText: '粘贴泰文、英文或其他语种文字'),
+        decoration: const InputDecoration(hintText: '粘贴需要翻译的文字'),
       ),
       const SizedBox(height: 12),
       Row(
@@ -384,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _url, _token;
   late double _fontSize;
   bool _obscure = true, _testing = false;
-  String _version = '0.1.0';
+  String _version = '0.1.1';
   @override
   void initState() {
     super.initState();
@@ -541,7 +541,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
           Center(
             child: Text(
-              'ForTranslate $_version',
+              'ForTranslation翻译 $_version',
               style: const TextStyle(color: AppColors.muted),
             ),
           ),

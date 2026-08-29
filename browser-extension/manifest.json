@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ForTranslate 多语种翻译",
-  "description": "以泰语和泰娱内容为重点，支持英语及其他常见语言的自然中文翻译工具。",
-  "version": "0.5.0",
+  "name": "ForTranslation翻译",
+  "description": "以泰语和泰娱内容为重点的自然中文翻译工具。",
+  "version": "0.5.1",
   "permissions": ["contextMenus", "scripting", "sidePanel", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {
@@ -10,7 +10,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "打开 ForTranslate"
+    "default_title": "打开 ForTranslation翻译"
   },
   "side_panel": {
     "default_path": "src/popup/popup.html"

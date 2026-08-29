@@ -1,14 +1,14 @@
-# ForTranslate
+# ForTranslation翻译
 
-以泰语和泰娱内容为重点，支持英语及其他常见语言的自然中文翻译项目。
+以泰语和泰娱内容为重点的自然中文翻译项目。
 
 ## 当前版本
 
 | 组件 | 版本 |
 |---|---:|
-| 浏览器扩展 | 0.5.0 |
+| 浏览器扩展 | 0.5.1 |
 | 轻量后端 | 0.3.0 |
-| Android App | 0.1.0 |
+| Android App | 0.1.1 |
 
 版本规则与发布流程见 [docs/versioning.md](docs/versioning.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
 
