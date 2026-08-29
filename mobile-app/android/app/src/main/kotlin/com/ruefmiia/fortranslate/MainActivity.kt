@@ -49,6 +49,11 @@ class MainActivity : FlutterActivity() {
                                 OverlayService.EXTRA_AUTO_TRANSLATE,
                                 call.argument<Boolean>("autoTranslate") == true,
                             )
+                            putExtra(OverlayService.EXTRA_MODE, call.argument<String>("mode") ?: "server")
+                            putExtra(OverlayService.EXTRA_TOKEN, call.argument<String>("token") ?: "")
+                            putExtra(OverlayService.EXTRA_LLM_BASE_URL, call.argument<String>("llmBaseUrl") ?: "")
+                            putExtra(OverlayService.EXTRA_LLM_MODEL, call.argument<String>("llmModel") ?: "")
+                            putExtra(OverlayService.EXTRA_LLM_API_KEY, call.argument<String>("llmApiKey") ?: "")
                         }
                         ContextCompat.startForegroundService(this, intent)
                         result.success(true)

@@ -52,9 +52,21 @@ class OverlayController {
   Future<bool> requestPermission() async =>
       await _channel.invokeMethod<bool>('requestPermission') ?? false;
 
-  Future<bool> start({required bool autoTranslate}) async =>
+  Future<bool> start({
+    required bool autoTranslate,
+    required String mode,
+    required String token,
+    required String llmBaseUrl,
+    required String llmModel,
+    required String llmApiKey,
+  }) async =>
       await _channel.invokeMethod<bool>('start', {
         'autoTranslate': autoTranslate,
+        'mode': mode,
+        'token': token,
+        'llmBaseUrl': llmBaseUrl,
+        'llmModel': llmModel,
+        'llmApiKey': llmApiKey,
       }) ??
       false;
 

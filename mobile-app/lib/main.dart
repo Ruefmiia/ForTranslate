@@ -158,7 +158,14 @@ class _TranslationScreenState extends State<TranslationScreen> {
       if (value.overlayEnabled) {
         final status = await _overlay.status();
         if (status.canDraw) {
-          await _overlay.start(autoTranslate: value.overlayAutoTranslate);
+          await _overlay.start(
+            autoTranslate: value.overlayAutoTranslate,
+            mode: value.mode,
+            token: value.token,
+            llmBaseUrl: value.llmBaseUrl,
+            llmModel: value.llmModel,
+            llmApiKey: value.llmApiKey,
+          );
         }
       } else {
         await _overlay.stop();
