@@ -2,6 +2,15 @@
 
 面向泰娱内容的泰语自然中文翻译项目。
 
+## 当前版本
+
+| 组件 | 版本 |
+|---|---:|
+| 浏览器扩展 | 0.1.0 |
+| 轻量后端 | 0.2.0 |
+
+版本规则与发布流程见 [docs/versioning.md](docs/versioning.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
+
 ## 项目结构
 
 ```text

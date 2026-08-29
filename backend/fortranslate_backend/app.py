@@ -11,6 +11,7 @@ from starlette.datastructures import MutableHeaders
 from .config import Settings
 from .database import Database
 from .llm import LLMClient, ModelError
+from .version import __version__
 
 
 class TextTranslationRequest(BaseModel):
@@ -69,7 +70,7 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
         database.initialize()
         yield
 
-    app = FastAPI(title="ForTranslate Backend", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="ForTranslate Backend", version=__version__, lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],

@@ -2,6 +2,7 @@ import { readFile, access } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 
 const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
+const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 const referencedFiles = [
   manifest.background.service_worker,
   manifest.action.default_popup,
@@ -23,4 +24,7 @@ for (const file of [
 }
 
 if (manifest.manifest_version !== 3) throw new Error("Manifest V3 is required");
-console.log(`Validated ${referencedFiles.length} manifest references and JavaScript syntax.`);
+if (manifest.version !== packageJson.version) {
+  throw new Error(`Version mismatch: manifest ${manifest.version}, package ${packageJson.version}`);
+}
+console.log(`Validated extension ${manifest.version}, ${referencedFiles.length} manifest references and JavaScript syntax.`);
