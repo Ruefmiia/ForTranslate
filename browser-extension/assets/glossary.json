@@ -1,5 +1,5 @@
 {
-  "version": "1.2.2",
+  "version": "1.2.3",
   "terms": [
     {
       "source": "555",
@@ -10,31 +10,6 @@
       "source": "55555",
       "target": "哈哈哈哈",
       "note": "连续多个5表示大笑；无需逐个数字保留"
-    },
-    {
-      "source": "JASP.ER",
-      "target": "JASP.ER",
-      "note": "GMMTV旗下男子组合名；保持官方标点和大写"
-    },
-    {
-      "source": "LYKN",
-      "target": "LYKN",
-      "note": "GMMTV旗下男子组合名；保持官方大写"
-    },
-    {
-      "source": "Perth Tanapon",
-      "target": "Perth Tanapon",
-      "note": "艺人常用英文名；不要翻译为澳大利亚城市珀斯"
-    },
-    {
-      "source": "PerthSanta",
-      "target": "PerthSanta",
-      "note": "GMMTV艺人组合英文写法；保持原样"
-    },
-    {
-      "source": "Santa Pongsapak",
-      "target": "Santa Pongsapak",
-      "note": "艺人常用英文名"
     },
     {
       "source": "กดบัตร",

@@ -31,8 +31,8 @@ if (!manifest.permissions.includes("sidePanel")) throw new Error("Side Panel per
 if (manifest.version !== packageJson.version) {
   throw new Error(`Version mismatch: manifest ${manifest.version}, package ${packageJson.version}`);
 }
-if (glossary.version !== "1.2.2" || glossary.terms.length !== 196) {
-  throw new Error("Bundled glossary 1.2.2 with 196 terms is required");
+if (glossary.version !== "1.2.3" || glossary.terms.length !== 191) {
+  throw new Error("Bundled glossary 1.2.3 with 191 terms is required");
 }
 const {
   glossaryDraftFilename,
