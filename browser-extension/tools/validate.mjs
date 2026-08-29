@@ -6,6 +6,7 @@ const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 const referencedFiles = [
   manifest.background.service_worker,
   manifest.action.default_popup,
+  manifest.side_panel?.default_path,
   manifest.options_page,
   ...manifest.content_scripts.flatMap((entry) => entry.js)
 ].filter(Boolean);
@@ -24,6 +25,7 @@ for (const file of [
 }
 
 if (manifest.manifest_version !== 3) throw new Error("Manifest V3 is required");
+if (!manifest.permissions.includes("sidePanel")) throw new Error("Side Panel permission is required");
 if (manifest.version !== packageJson.version) {
   throw new Error(`Version mismatch: manifest ${manifest.version}, package ${packageJson.version}`);
 }

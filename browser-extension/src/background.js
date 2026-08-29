@@ -3,7 +3,8 @@ import { getSettings } from "./lib/config.js";
 
 const MENU_SELECTION = "fortranslate-selection";
 const MENU_IMAGE = "fortranslate-image";
-const WORKSPACE_PATH = "src/popup/popup.html";
+
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 
 async function injectContentScript(tabId) {
   if (!tabId) return false;
@@ -15,29 +16,8 @@ async function injectContentScript(tabId) {
   }
 }
 
-async function openWorkspace(sourceTab) {
-  await injectContentScript(sourceTab?.id);
-  const { workspaceTabId } = await chrome.storage.session.get("workspaceTabId");
-  if (workspaceTabId) {
-    try {
-      await chrome.tabs.update(workspaceTabId, { active: true });
-      return;
-    } catch {
-      await chrome.storage.session.remove("workspaceTabId");
-    }
-  }
-  const tab = await chrome.tabs.create({ url: chrome.runtime.getURL(WORKSPACE_PATH) });
-  await chrome.storage.session.set({ workspaceTabId: tab.id });
-}
-
-chrome.action.onClicked.addListener(openWorkspace);
-
-chrome.tabs.onRemoved.addListener(async (tabId) => {
-  const { workspaceTabId } = await chrome.storage.session.get("workspaceTabId");
-  if (tabId === workspaceTabId) await chrome.storage.session.remove("workspaceTabId");
-});
-
 chrome.runtime.onInstalled.addListener(() => {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: MENU_SELECTION,
