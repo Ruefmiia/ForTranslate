@@ -12,3 +12,5 @@ ForTranslate/
 ```
 
 浏览器扩展的安装与使用见 [browser-extension/README.md](browser-extension/README.md)；后端的配置、API 和测试说明见 [backend/README.md](backend/README.md)。后续 Android App 将放入独立二级目录。
+
+服务器当前部署状态及后续操作见 [docs/server-deployment-progress.md](docs/server-deployment-progress.md)。

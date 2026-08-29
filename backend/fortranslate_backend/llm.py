@@ -55,6 +55,8 @@ class LLMClient:
             "temperature": 0.2,
             "response_format": {"type": "json_object"},
         }
+        if self.settings.llm_thinking:
+            payload["thinking"] = {"type": self.settings.llm_thinking}
         try:
             with httpx.Client(timeout=self.settings.request_timeout_seconds, transport=self.transport) as client:
                 response = client.post(url, headers=headers, json=payload)

@@ -18,6 +18,7 @@ python -m venv .venv
 - `FORTRANSLATE_LLM_API_KEY`：大模型 API Key；必填。
 - `FORTRANSLATE_LLM_BASE_URL`：兼容 OpenAI 的 API 根地址，默认 `https://api.openai.com/v1`。
 - `FORTRANSLATE_LLM_MODEL`：支持文本和图片输入的模型名。
+- `FORTRANSLATE_LLM_THINKING`：可选值 `enabled` 或 `disabled`；DeepSeek 翻译建议设为 `disabled`。
 - `FORTRANSLATE_DATABASE_PATH`：SQLite 文件路径。
 - `FORTRANSLATE_MAX_IMAGE_BYTES`：图片上限，默认 10MB。
 - `FORTRANSLATE_REQUEST_TIMEOUT_SECONDS`：上游请求超时秒数。

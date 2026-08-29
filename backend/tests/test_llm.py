@@ -17,7 +17,14 @@ def test_openai_compatible_request_and_usage(tmp_path):
             "usage": {"prompt_tokens": 9, "completion_tokens": 3},
         })
 
-    settings = Settings("access", "api-key", "https://example.test/v1/", "demo", tmp_path / "db")
+    settings = Settings(
+        "access",
+        "api-key",
+        "https://example.test/v1/",
+        "demo",
+        tmp_path / "db",
+        llm_thinking="disabled",
+    )
     client = LLMClient(settings, httpx.MockTransport(handler))
     result, usage = client.translate_text("สวัสดี", "", [])
     assert result["translation"] == "你好"
@@ -25,3 +32,4 @@ def test_openai_compatible_request_and_usage(tmp_path):
     assert captured["authorization"] == "Bearer api-key"
     assert captured["payload"]["model"] == "demo"
     assert captured["payload"]["response_format"] == {"type": "json_object"}
+    assert captured["payload"]["thinking"] == {"type": "disabled"}
