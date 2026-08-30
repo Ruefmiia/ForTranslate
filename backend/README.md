@@ -22,6 +22,9 @@ python -m venv .venv
 - `FORTRANSLATE_DATABASE_PATH`：SQLite 文件路径。
 - `FORTRANSLATE_MAX_IMAGE_BYTES`：图片上限，默认 10MB。
 - `FORTRANSLATE_MAX_TEXT_CHARS`：单次翻译原文字符数上限，默认 3000；超限请求在调用模型前返回 413。
+- `FORTRANSLATE_DEFAULT_TOKEN_QUOTA_YUAN`：新建独立令牌的默认额度，默认 5 元。
+- `FORTRANSLATE_INPUT_PRICE_PER_MILLION`：每百万输入 Token 价格，默认 3 元。
+- `FORTRANSLATE_OUTPUT_PRICE_PER_MILLION`：每百万输出 Token 价格，默认 9 元。
 - `FORTRANSLATE_REQUEST_TIMEOUT_SECONDS`：上游请求超时秒数。
 
 项目不主动加载 `.env`，避免引入额外依赖；可通过 PowerShell、Docker 或进程管理器注入环境变量。
@@ -46,13 +49,20 @@ python -m venv .venv
 
 ```bash
 python -m fortranslate_backend.token_cli create "Android 用户"
+python -m fortranslate_backend.token_cli create "测试用户" --quota-yuan 10
 python -m fortranslate_backend.token_cli list
+python -m fortranslate_backend.token_cli usage 1
+python -m fortranslate_backend.token_cli quota-add 1 5
+python -m fortranslate_backend.token_cli quota-set 1 10
+python -m fortranslate_backend.token_cli quota-reset 1
 python -m fortranslate_backend.token_cli disable 1
 python -m fortranslate_backend.token_cli enable 1
 python -m fortranslate_backend.token_cli revoke 1
 ```
 
 所有令牌继续使用 `Authorization: Bearer <token>`。环境变量中的旧全局令牌保持兼容，部署升级不会中断现有扩展。
+
+独立令牌默认获得 5 元加权额度。每次模型返回 usage 后按 `输入 Token × 3 + 输出 Token × 9` 累计计费单位；达到额度后，下一次翻译在调用模型前返回 HTTP 429。最后一次请求可能轻微超过额度。`quota-reset` 仅清零当前计费额度，历史请求明细继续保留。旧数据库会自动增加额度和用量字段；升级前的历史用量无法归属到具体令牌，因此不追溯扣减。全局环境变量令牌作为管理员兼容令牌，不参与个人额度限制。
 
 ## 测试
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from decimal import Decimal, ROUND_CEILING
 import hmac
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
@@ -82,7 +83,7 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     app.state.llm_client = client
     app.state.settings = settings
 
-    def authenticate(authorization: str | None = Header(default=None)) -> None:
+    def authenticate(authorization: str | None = Header(default=None)) -> dict:
         scheme, _, token = (authorization or "").partition(" ")
         legacy_match = bool(settings.access_token) and hmac.compare_digest(token, settings.access_token)
         database_match = database.authenticate_access_token(token) if scheme.lower() == "bearer" else None
@@ -92,6 +93,22 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
                 detail="Invalid or missing access token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        if database_match:
+            return database_match
+        return {"id": None, "name": "legacy-global-token"}
+
+    def billing_units(usage: dict) -> int:
+        value = (
+            Decimal(usage["input_tokens"]) * settings.input_price_per_million
+            + Decimal(usage["output_tokens"]) * settings.output_price_per_million
+        )
+        return int(value.to_integral_value(rounding=ROUND_CEILING))
+
+    def require_quota(identity: dict) -> int | None:
+        token_id = identity.get("id")
+        if token_id is not None and not database.has_available_quota(token_id):
+            raise HTTPException(status_code=429, detail="Token quota exhausted")
+        return token_id
 
     auth = [Depends(authenticate)]
 
@@ -99,27 +116,33 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     def health() -> dict:
         return {"status": "ok"}
 
-    @app.post("/v1/translate/text", dependencies=auth)
-    def translate_text(payload: TextTranslationRequest) -> dict:
+    @app.post("/v1/translate/text")
+    def translate_text(payload: TextTranslationRequest, identity: dict = Depends(authenticate)) -> dict:
         if len(payload.text) > settings.max_text_chars:
             raise HTTPException(
                 status_code=413,
                 detail=f"Text exceeds the {settings.max_text_chars} character limit",
             )
+        token_id = require_quota(identity)
         terms = database.matching_terms(payload.text, payload.context)
         try:
             result, usage = client.translate_text(payload.text, payload.context, terms)
         except ModelError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
-        database.record_usage("text", payload.source, settings.llm_model, usage["input_tokens"], usage["output_tokens"])
+        database.record_usage(
+            "text", payload.source, settings.llm_model, usage["input_tokens"], usage["output_tokens"],
+            token_id=token_id, billing_units=billing_units(usage),
+        )
         return result | {"usage": usage}
 
-    @app.post("/v1/translate/image", dependencies=auth)
+    @app.post("/v1/translate/image")
     async def translate_image(
         request: Request,
         image: UploadFile = File(...),
         source: str = Form(default=""),
+        identity: dict = Depends(authenticate),
     ) -> dict:
+        token_id = require_quota(identity)
         content_length = request.headers.get("content-length")
         if content_length:
             try:
@@ -138,7 +161,10 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
             result, usage = client.translate_image(data, image.content_type, source, database.list_terms())
         except ModelError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
-        database.record_usage("image", source, settings.llm_model, usage["input_tokens"], usage["output_tokens"])
+        database.record_usage(
+            "image", source, settings.llm_model, usage["input_tokens"], usage["output_tokens"],
+            token_id=token_id, billing_units=billing_units(usage),
+        )
         return result | {"usage": usage}
 
     @app.get("/v1/glossary", dependencies=auth)

@@ -9,9 +9,11 @@ from fortranslate_backend.config import Settings
 class FakeLLM:
     def __init__(self):
         self.text_terms = []
+        self.text_calls = 0
         self.image_call = None
 
     def translate_text(self, text, context, terms):
+        self.text_calls += 1
         self.text_terms = terms
         return (
             {"translation": "自然译文", "notes": [], "uncertainties": [], "entities": []},
@@ -46,7 +48,7 @@ def auth():
 
 def test_authentication_and_health(tmp_path):
     with make_client(tmp_path)[0] as client:
-        assert client.app.version == "0.3.1"
+        assert client.app.version == "0.4.0"
         assert client.get("/health").status_code == 401
         assert client.get("/health", headers=auth()).json() == {"status": "ok"}
         preflight = client.options(
@@ -126,6 +128,27 @@ def test_text_length_limit_rejects_before_model_call(tmp_path):
         assert response.status_code == 413
         assert response.json() == {"detail": "Text exceeds the 3 character limit"}
         assert fake.text_terms == []
+
+
+def test_token_quota_is_billed_and_blocks_the_next_request(tmp_path):
+    client, fake = make_client(tmp_path)
+    with client:
+        record, token = client.app.state.database.create_access_token("quota-user", quota_units=80)
+        headers = {"Authorization": f"Bearer {token}"}
+        first = client.post("/v1/translate/text", headers=headers, json={"text": "สวัสดี"})
+        assert first.status_code == 200
+        usage = client.app.state.database.token_usage(record["id"])
+        assert usage["used_units"] == 81
+        assert usage["requests"] == 1
+        assert usage["input_tokens"] == 12
+        assert usage["output_tokens"] == 5
+        blocked = client.post("/v1/translate/text", headers=headers, json={"text": "อีกครั้ง"})
+        assert blocked.status_code == 429
+        assert blocked.json() == {"detail": "Token quota exhausted"}
+        assert fake.text_calls == 1
+        assert client.app.state.database.add_token_quota(record["id"], 100)
+        assert client.post("/v1/translate/text", headers=headers, json={"text": "อีกครั้ง"}).status_code == 200
+        assert fake.text_calls == 2
 
 
 def test_image_translation_and_validation(tmp_path):

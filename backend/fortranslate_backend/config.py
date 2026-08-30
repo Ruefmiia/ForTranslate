@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 import os
 from pathlib import Path
 
@@ -16,6 +17,9 @@ class Settings:
     request_timeout_seconds: float = 90.0
     llm_thinking: str = ""
     max_text_chars: int = 3000
+    default_token_quota_yuan: Decimal = Decimal("5")
+    input_price_per_million: Decimal = Decimal("3")
+    output_price_per_million: Decimal = Decimal("9")
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -32,4 +36,7 @@ class Settings:
             request_timeout_seconds=float(os.getenv("FORTRANSLATE_REQUEST_TIMEOUT_SECONDS", "90")),
             llm_thinking=llm_thinking,
             max_text_chars=int(os.getenv("FORTRANSLATE_MAX_TEXT_CHARS", "3000")),
+            default_token_quota_yuan=Decimal(os.getenv("FORTRANSLATE_DEFAULT_TOKEN_QUOTA_YUAN", "5")),
+            input_price_per_million=Decimal(os.getenv("FORTRANSLATE_INPUT_PRICE_PER_MILLION", "3")),
+            output_price_per_million=Decimal(os.getenv("FORTRANSLATE_OUTPUT_PRICE_PER_MILLION", "9")),
         )

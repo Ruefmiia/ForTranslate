@@ -16,6 +16,15 @@ def test_token_cli_lifecycle(tmp_path, monkeypatch, capsys):
     assert "手机用户" in listed_output
     assert token not in listed_output
 
+    assert main(["usage", str(record["id"])]) == 0
+    assert '"quota_yuan": "5.000000"' in capsys.readouterr().out
+    assert main(["quota-add", str(record["id"]), "2.5"]) == 0
+    assert '"quota_yuan": "7.500000"' in capsys.readouterr().out
+    assert main(["quota-set", str(record["id"]), "4"]) == 0
+    assert '"quota_yuan": "4.000000"' in capsys.readouterr().out
+    assert main(["quota-reset", str(record["id"])]) == 0
+    capsys.readouterr()
+
     for command in ("disable", "enable", "revoke"):
         assert main([command, str(record["id"])]) == 0
         capsys.readouterr()
