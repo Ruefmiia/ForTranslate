@@ -101,6 +101,11 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
 
     @app.post("/v1/translate/text", dependencies=auth)
     def translate_text(payload: TextTranslationRequest) -> dict:
+        if len(payload.text) > settings.max_text_chars:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Text exceeds the {settings.max_text_chars} character limit",
+            )
         terms = database.matching_terms(payload.text, payload.context)
         try:
             result, usage = client.translate_text(payload.text, payload.context, terms)

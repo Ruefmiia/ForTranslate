@@ -15,6 +15,7 @@ class Settings:
     max_image_bytes: int = 10 * 1024 * 1024
     request_timeout_seconds: float = 90.0
     llm_thinking: str = ""
+    max_text_chars: int = 3000
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -30,4 +31,5 @@ class Settings:
             max_image_bytes=int(os.getenv("FORTRANSLATE_MAX_IMAGE_BYTES", str(10 * 1024 * 1024))),
             request_timeout_seconds=float(os.getenv("FORTRANSLATE_REQUEST_TIMEOUT_SECONDS", "90")),
             llm_thinking=llm_thinking,
+            max_text_chars=int(os.getenv("FORTRANSLATE_MAX_TEXT_CHARS", "3000")),
         )

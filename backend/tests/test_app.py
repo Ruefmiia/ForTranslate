@@ -26,14 +26,15 @@ class FakeLLM:
         )
 
 
-def make_client(tmp_path: Path, max_image_bytes: int = 1024):
+def make_client(tmp_path: Path, max_image_bytes: int = 1024, max_text_chars: int = 3000):
     settings = Settings(
         "secret",
         "model-key",
         "https://model.example/v1",
         "test-model",
         tmp_path / "test.db",
-        max_image_bytes,
+        max_image_bytes=max_image_bytes,
+        max_text_chars=max_text_chars,
     )
     fake = FakeLLM()
     return TestClient(create_app(settings, fake)), fake
@@ -45,7 +46,7 @@ def auth():
 
 def test_authentication_and_health(tmp_path):
     with make_client(tmp_path)[0] as client:
-        assert client.app.version == "0.3.0"
+        assert client.app.version == "0.3.1"
         assert client.get("/health").status_code == 401
         assert client.get("/health", headers=auth()).json() == {"status": "ok"}
         preflight = client.options(
@@ -112,6 +113,19 @@ def test_glossary_is_injected_and_usage_is_recorded(tmp_path):
             }],
         }
         assert client.delete(f'/v1/glossary/{term.json()["id"]}', headers=auth()).json() == {"deleted": True}
+
+
+def test_text_length_limit_rejects_before_model_call(tmp_path):
+    client, fake = make_client(tmp_path, max_text_chars=3)
+    with client:
+        response = client.post(
+            "/v1/translate/text",
+            headers=auth(),
+            json={"text": "สวัสดี", "source": "limit-test"},
+        )
+        assert response.status_code == 413
+        assert response.json() == {"detail": "Text exceeds the 3 character limit"}
+        assert fake.text_terms == []
 
 
 def test_image_translation_and_validation(tmp_path):

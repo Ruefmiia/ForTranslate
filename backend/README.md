@@ -21,6 +21,7 @@ python -m venv .venv
 - `FORTRANSLATE_LLM_THINKING`：可选值 `enabled` 或 `disabled`；DeepSeek 翻译建议设为 `disabled`。
 - `FORTRANSLATE_DATABASE_PATH`：SQLite 文件路径。
 - `FORTRANSLATE_MAX_IMAGE_BYTES`：图片上限，默认 10MB。
+- `FORTRANSLATE_MAX_TEXT_CHARS`：单次翻译原文字符数上限，默认 3000；超限请求在调用模型前返回 413。
 - `FORTRANSLATE_REQUEST_TIMEOUT_SECONDS`：上游请求超时秒数。
 
 项目不主动加载 `.env`，避免引入额外依赖；可通过 PowerShell、Docker 或进程管理器注入环境变量。
