@@ -36,3 +36,41 @@ class TranslationResult {
       ? value.whereType<Object>().map((item) => item.toString()).toList()
       : const [];
 }
+
+class TokenBalance {
+  const TokenBalance({
+    required this.unlimited,
+    required this.name,
+    this.quotaYuan,
+    this.usedYuan,
+    this.remainingYuan,
+    this.requests = 0,
+    this.exhausted = false,
+  });
+
+  factory TokenBalance.fromJson(Map<String, dynamic> json) {
+    final unlimited = json['unlimited'] == true;
+    return TokenBalance(
+      unlimited: unlimited,
+      name: json['name']?.toString() ?? '',
+      quotaYuan: unlimited ? null : _number(json['quota_yuan']),
+      usedYuan: unlimited ? null : _number(json['used_yuan']),
+      remainingYuan: unlimited ? null : _number(json['remaining_yuan']),
+      requests: (json['requests'] as num?)?.toInt() ?? 0,
+      exhausted: json['exhausted'] == true,
+    );
+  }
+
+  final bool unlimited;
+  final String name;
+  final double? quotaYuan;
+  final double? usedYuan;
+  final double? remainingYuan;
+  final int requests;
+  final bool exhausted;
+
+  static double? _number(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
+  }
+}

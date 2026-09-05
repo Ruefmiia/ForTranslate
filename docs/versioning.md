@@ -6,9 +6,9 @@ ForTranslate 是多组件仓库，浏览器扩展、后端与移动端独立发�
 
 | 组件 | 当前版本 | 唯一版本源 | Git 标签 |
 |---|---:|---|---|
-| 浏览器扩展 | 0.5.1 | `browser-extension/manifest.json` | `extension-v0.5.1` |
-| 后端 | 0.3.0 | `backend/fortranslate_backend/version.py` | `backend-v0.3.0` |
-| Android App | 0.1.1 | `mobile-app/pubspec.yaml` | `mobile-v0.1.1` |
+| 浏览器扩展 | 0.6.2 | `browser-extension/manifest.json` | `extension-v0.6.2` |
+| 后端 | 0.5.0 | `backend/fortranslate_backend/version.py` | `backend-v0.5.0` |
+| Android App | 0.3.0 | `mobile-app/pubspec.yaml` | `mobile-v0.3.0` |
 
 扩展的 `package.json` 必须与 `manifest.json` 一致，`npm run check` 会检查这一点。后端 FastAPI 元数据直接读取 `version.py`，测试会校验版本。移动端的 Android `versionName` 与 `versionCode` 由 `pubspec.yaml` 的 `version` 生成。
 

@@ -46,6 +46,14 @@ class ForTranslateApi {
     }
   }
 
+  Future<TokenBalance> tokenBalance({
+    required String baseUrl,
+    required String token,
+  }) async {
+    final payload = await _request(baseUrl, token, '/v1/token/usage');
+    return TokenBalance.fromJson(payload);
+  }
+
   Future<Map<String, dynamic>> _request(
     String baseUrl,
     String token,

@@ -52,4 +52,53 @@ void main() {
       ),
     );
   });
+
+  test('loads the authenticated token balance', () async {
+    final client = MockClient((request) async {
+      expect(request.url.toString(), 'http://example.test/v1/token/usage');
+      expect(request.headers['authorization'], 'Bearer ft_test');
+      return http.Response(
+        jsonEncode({
+          'metered': true,
+          'unlimited': false,
+          'name': 'Android 用户',
+          'quota_yuan': 5,
+          'used_yuan': 1.25,
+          'remaining_yuan': 3.75,
+          'requests': 42,
+          'exhausted': false,
+        }),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    });
+
+    final balance = await ForTranslateApi(
+      client: client,
+    ).tokenBalance(baseUrl: 'http://example.test', token: 'ft_test');
+    expect(balance.unlimited, isFalse);
+    expect(balance.remainingYuan, 3.75);
+    expect(balance.usedYuan, 1.25);
+    expect(balance.quotaYuan, 5);
+    expect(balance.requests, 42);
+  });
+
+  test('parses the unlimited administrator token balance', () async {
+    final client = MockClient(
+      (_) async => http.Response(
+        jsonEncode({
+          'metered': false,
+          'unlimited': true,
+          'name': 'legacy-global-token',
+        }),
+        200,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+    final balance = await ForTranslateApi(
+      client: client,
+    ).tokenBalance(baseUrl: 'http://example.test', token: 'admin');
+    expect(balance.unlimited, isTrue);
+    expect(balance.remainingYuan, isNull);
+  });
 }

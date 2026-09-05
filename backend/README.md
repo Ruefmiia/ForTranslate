@@ -40,6 +40,7 @@ python -m venv .venv
 - `PUT /v1/glossary`：按源词新增或更新术语，JSON 字段为 `source`、`target`、`note`。
 - `DELETE /v1/glossary/{id}`：删除术语。
 - `GET /v1/usage`：汇总请求数和模型输入、输出 Token。
+- `GET /v1/token/usage`：查询当前认证令牌自己的额度、余额和累计 Token；全局管理员兼容令牌返回不限额。
 
 文本翻译只注入在原文或上下文中命中的术语；图片翻译因 OCR 在模型侧完成，会注入完整术语表。Token 数据采用上游返回的 usage，按请求持久化到 SQLite。
 

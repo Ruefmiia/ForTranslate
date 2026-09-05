@@ -433,7 +433,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late double _fontSize;
   late bool _overlayEnabled, _overlayAutoTranslate;
   bool _obscure = true, _testing = false;
-  String _version = '0.2.0';
+  bool _balanceLoading = false;
+  TokenBalance? _tokenBalance;
+  String? _balanceError;
+  String _balanceToken = '';
+  String _version = '0.3.0';
   @override
   void initState() {
     super.initState();
@@ -445,9 +449,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _fontSize = widget.initial.resultFontSize;
     _overlayEnabled = widget.initial.overlayEnabled;
     _overlayAutoTranslate = widget.initial.overlayAutoTranslate;
+    _token.addListener(_handleTokenChanged);
     PackageInfo.fromPlatform().then((info) {
       if (mounted) setState(() => _version = info.version);
     });
+    if (_mode == 'server' && _token.text.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _refreshBalance());
+    }
   }
 
   AppSettings get _value => AppSettings(
@@ -460,6 +468,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
     overlayEnabled: _overlayEnabled,
     overlayAutoTranslate: _overlayAutoTranslate,
   );
+
+  void _handleTokenChanged() {
+    if (_balanceToken == _token.text.trim()) return;
+    if (_balanceLoading || _tokenBalance != null || _balanceError != null) {
+      setState(() {
+        _balanceLoading = false;
+        _tokenBalance = null;
+        _balanceError = null;
+        _balanceToken = '';
+      });
+    }
+  }
+
+  Future<void> _refreshBalance({bool showError = false}) async {
+    final token = _token.text.trim();
+    if (token.isEmpty) {
+      if (showError && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('请先填写访问令牌')));
+      }
+      return;
+    }
+    setState(() {
+      _balanceLoading = true;
+      _balanceError = null;
+    });
+    try {
+      final value = await widget.api.tokenBalance(
+        baseUrl: SettingsRepository.serviceUrl,
+        token: token,
+      );
+      if (mounted && token == _token.text.trim()) {
+        setState(() {
+          _tokenBalance = value;
+          _balanceToken = token;
+        });
+      }
+    } on ApiException catch (error) {
+      if (mounted && token == _token.text.trim()) {
+        setState(() => _balanceError = error.message);
+        if (showError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.message)));
+        }
+      }
+    } finally {
+      if (mounted && token == _token.text.trim()) {
+        setState(() => _balanceLoading = false);
+      }
+    }
+  }
+
   Future<void> _test() async {
     setState(() => _testing = true);
     try {
@@ -468,6 +530,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           baseUrl: SettingsRepository.serviceUrl,
           token: _token.text,
         );
+        await _refreshBalance();
       } else {
         await DirectApiClient().translate(
           baseUrl: _llmUrl.text,
@@ -494,11 +557,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    _token.removeListener(_handleTokenChanged);
     _token.dispose();
     _llmUrl.dispose();
     _llmModel.dispose();
     _llmKey.dispose();
     super.dispose();
+  }
+
+  String _yuan(double? value) => (value ?? 0).toStringAsFixed(2);
+
+  Widget _tokenBalancePanel() {
+    final balance = _balanceToken == _token.text.trim() ? _tokenBalance : null;
+    final canRefresh = !_balanceLoading && _token.text.trim().isNotEmpty;
+    final primary = balance == null
+        ? (_balanceLoading ? '正在查询余额' : '令牌余额')
+        : balance.unlimited
+        ? '不限额'
+        : '¥${_yuan(balance.remainingYuan)}';
+    final secondary = balance == null
+        ? (_balanceError ?? '填写令牌后可查询当前额度')
+        : balance.unlimited
+        ? '管理员兼容令牌'
+        : '已使用 ¥${_yuan(balance.usedYuan)} / 总额度 ¥${_yuan(balance.quotaYuan)} · ${balance.requests} 次';
+    final statusColor = balance?.exhausted == true
+        ? AppColors.orange
+        : AppColors.navy;
+
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label: '$primary，$secondary',
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+        decoration: BoxDecoration(
+          color: AppColors.mist,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    primary,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: balance == null ? 15 : 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    secondary,
+                    style: TextStyle(
+                      color: _balanceError == null
+                          ? AppColors.muted
+                          : AppColors.orange,
+                      fontSize: 12,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_balanceLoading)
+              const Padding(
+                padding: EdgeInsets.all(14),
+                child: SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else
+              IconButton(
+                onPressed: canRefresh
+                    ? () => _refreshBalance(showError: true)
+                    : null,
+                tooltip: '刷新令牌余额',
+                icon: const Icon(Icons.refresh_rounded),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -532,10 +675,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ButtonSegment(value: 'direct', label: Text('自有 API')),
             ],
             selected: {_mode},
-            onSelectionChanged: (value) => setState(() => _mode = value.first),
+            onSelectionChanged: (value) {
+              setState(() => _mode = value.first);
+              if (_mode == 'server' && _token.text.trim().isNotEmpty) {
+                _refreshBalance();
+              }
+            },
           ),
           const SizedBox(height: 16),
-          if (_mode == 'server')
+          if (_mode == 'server') ...[
             TextField(
               controller: _token,
               obscureText: _obscure,
@@ -554,6 +702,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            _tokenBalancePanel(),
+          ],
           if (_mode == 'direct') ...[
             TextField(
               controller: _llmUrl,

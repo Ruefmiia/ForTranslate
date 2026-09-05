@@ -48,7 +48,7 @@ def auth():
 
 def test_authentication_and_health(tmp_path):
     with make_client(tmp_path)[0] as client:
-        assert client.app.version == "0.4.0"
+        assert client.app.version == "0.5.0"
         assert client.get("/health").status_code == 401
         assert client.get("/health", headers=auth()).json() == {"status": "ok"}
         preflight = client.options(
@@ -63,6 +63,56 @@ def test_authentication_and_health(tmp_path):
         assert preflight.status_code == 200
         assert preflight.headers["access-control-allow-origin"] == "*"
         assert preflight.headers["access-control-allow-private-network"] == "true"
+
+
+def test_current_token_can_only_read_its_own_balance(tmp_path):
+    client, _ = make_client(tmp_path)
+    with client:
+        record, token = client.app.state.database.create_access_token(
+            "balance-user", quota_units=5_000_000,
+        )
+        other_record, _ = client.app.state.database.create_access_token(
+            "other-user", quota_units=10_000_000,
+        )
+        client.app.state.database.record_usage(
+            "text", "test", "test-model", 12, 5,
+            token_id=record["id"], billing_units=81,
+        )
+        client.app.state.database.record_usage(
+            "text", "other", "test-model", 100, 100,
+            token_id=other_record["id"], billing_units=1_200,
+        )
+
+        response = client.get(
+            "/v1/token/usage", headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 200
+        assert response.json() == {
+            "metered": True,
+            "unlimited": False,
+            "name": "balance-user",
+            "quota_units": 5_000_000,
+            "used_units": 81,
+            "remaining_units": 4_999_919,
+            "quota_yuan": 5.0,
+            "used_yuan": 0.000081,
+            "remaining_yuan": 4.999919,
+            "requests": 1,
+            "input_tokens": 12,
+            "output_tokens": 5,
+            "exhausted": False,
+        }
+
+
+def test_global_admin_token_reports_unlimited_balance(tmp_path):
+    with make_client(tmp_path)[0] as client:
+        response = client.get("/v1/token/usage", headers=auth())
+        assert response.status_code == 200
+        assert response.json() == {
+            "metered": False,
+            "unlimited": True,
+            "name": "legacy-global-token",
+        }
 
 
 def test_individual_access_tokens_can_be_managed(tmp_path):

@@ -221,6 +221,21 @@ class Database:
             ).fetchall()
         return dict(token) | dict(totals) | {"recent": [dict(row) for row in recent]}
 
+    def token_balance(self, token_id: int) -> dict | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                """SELECT t.id, t.name, t.quota_units, t.used_units,
+                          COUNT(u.id) AS requests,
+                          COALESCE(SUM(u.input_tokens), 0) AS input_tokens,
+                          COALESCE(SUM(u.output_tokens), 0) AS output_tokens
+                   FROM access_tokens t
+                   LEFT JOIN usage_events u ON u.token_id = t.id
+                   WHERE t.id = ? AND t.enabled = 1
+                   GROUP BY t.id""",
+                (token_id,),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
     def add_token_quota(self, token_id: int, units: int) -> bool:
         with self.connect() as connection:
             cursor = connection.execute(

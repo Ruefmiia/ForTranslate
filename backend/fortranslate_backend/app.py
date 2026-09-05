@@ -104,6 +104,9 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
         )
         return int(value.to_integral_value(rounding=ROUND_CEILING))
 
+    def yuan_from_units(units: int) -> float:
+        return float(Decimal(units) / Decimal(1_000_000))
+
     def require_quota(identity: dict) -> int | None:
         token_id = identity.get("id")
         if token_id is not None and not database.has_available_quota(token_id):
@@ -188,6 +191,37 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     @app.get("/v1/usage", dependencies=auth)
     def usage() -> dict:
         return database.usage_summary()
+
+    @app.get("/v1/token/usage")
+    def current_token_usage(identity: dict = Depends(authenticate)) -> dict:
+        token_id = identity.get("id")
+        if token_id is None:
+            return {
+                "metered": False,
+                "unlimited": True,
+                "name": identity["name"],
+            }
+        balance = database.token_balance(token_id)
+        if balance is None:
+            raise HTTPException(status_code=401, detail="Access token is no longer available")
+        quota_units = balance["quota_units"]
+        used_units = balance["used_units"]
+        remaining_units = max(quota_units - used_units, 0)
+        return {
+            "metered": True,
+            "unlimited": False,
+            "name": balance["name"],
+            "quota_units": quota_units,
+            "used_units": used_units,
+            "remaining_units": remaining_units,
+            "quota_yuan": yuan_from_units(quota_units),
+            "used_yuan": yuan_from_units(used_units),
+            "remaining_yuan": yuan_from_units(remaining_units),
+            "requests": balance["requests"],
+            "input_tokens": balance["input_tokens"],
+            "output_tokens": balance["output_tokens"],
+            "exhausted": used_units >= quota_units,
+        }
 
     return app
 
