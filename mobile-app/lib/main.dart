@@ -437,7 +437,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   TokenBalance? _tokenBalance;
   String? _balanceError;
   String _balanceToken = '';
-  String _version = '0.3.0';
+  String _version = '0.3.1';
   @override
   void initState() {
     super.initState();
