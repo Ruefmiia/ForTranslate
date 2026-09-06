@@ -140,6 +140,11 @@ class _TranslationScreenState extends State<TranslationScreen> {
               text: text,
             );
       if (mounted) setState(() => _result = value);
+      try {
+        await _overlay.addHistory(source: text, translation: value.translation);
+      } on PlatformException {
+        // Translation remains usable even if local history persistence fails.
+      }
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } finally {
@@ -174,6 +179,67 @@ class _TranslationScreenState extends State<TranslationScreen> {
     }
   }
 
+  Future<void> _openOverlay() async {
+    try {
+      final status = await _overlay.status();
+      if (!status.canDraw) {
+        await _overlay.requestPermission();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('请授权悬浮窗权限，返回后再次点击“悬浮窗”')),
+          );
+        }
+        return;
+      }
+      final started = await _overlay.start(
+        autoTranslate: _settings.overlayAutoTranslate,
+        mode: _settings.mode,
+        token: _settings.token,
+        llmBaseUrl: _settings.llmBaseUrl,
+        llmModel: _settings.llmModel,
+        llmApiKey: _settings.llmApiKey,
+      );
+      if (!mounted) return;
+      if (started && !_settings.overlayEnabled) {
+        final value = AppSettings(
+          mode: _settings.mode,
+          token: _settings.token,
+          llmBaseUrl: _settings.llmBaseUrl,
+          llmModel: _settings.llmModel,
+          llmApiKey: _settings.llmApiKey,
+          resultFontSize: _settings.resultFontSize,
+          overlayEnabled: true,
+          overlayAutoTranslate: _settings.overlayAutoTranslate,
+        );
+        await _settingsRepository.save(value);
+        if (mounted) setState(() => _settings = value);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(started ? '悬浮窗已打开' : '无法打开悬浮窗')));
+      }
+    } on PlatformException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message ?? '无法打开悬浮窗')));
+      }
+    }
+  }
+
+  Future<void> _openHistory() async {
+    final entry = await Navigator.of(context).push<TranslationHistoryEntry>(
+      MaterialPageRoute(builder: (_) => HistoryScreen(controller: _overlay)),
+    );
+    if (entry == null || !mounted) return;
+    _sourceController.text = entry.source;
+    setState(() {
+      _error = null;
+      _result = TranslationResult(translation: entry.translation);
+    });
+  }
+
   @override
   void dispose() {
     _sourceController.dispose();
@@ -184,23 +250,21 @@ class _TranslationScreenState extends State<TranslationScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       titleSpacing: 20,
-      title: const Row(
-        children: [
-          Text(
-            'ForTranslation翻译',
-            style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.4),
-          ),
-          SizedBox(width: 6),
-          Text(
-            '่',
-            style: TextStyle(
-              color: AppColors.orange,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+      title: const Text(
+        '翻译',
+        style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.4),
       ),
       actions: [
+        TextButton.icon(
+          onPressed: _ready ? _openOverlay : null,
+          icon: const Icon(Icons.picture_in_picture_alt_rounded, size: 20),
+          label: const Text('悬浮窗'),
+        ),
+        IconButton(
+          onPressed: _ready ? _openHistory : null,
+          tooltip: '历史记录',
+          icon: const Icon(Icons.history_rounded),
+        ),
         IconButton(
           onPressed: _openSettings,
           tooltip: '设置',
@@ -419,6 +483,121 @@ class _TranslationScreenState extends State<TranslationScreen> {
   );
 }
 
+class HistoryScreen extends StatelessWidget {
+  const HistoryScreen({super.key, required this.controller});
+
+  final OverlayController controller;
+
+  String _time(DateTime value) {
+    final local = value.toLocal();
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${two(local.month)}-${two(local.day)} '
+        '${two(local.hour)}:${two(local.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('历史记录')),
+    body: SafeArea(
+      top: false,
+      child: FutureBuilder<List<TranslationHistoryEntry>>(
+        future: controller.history(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return const Center(child: Text('无法读取历史记录'));
+          }
+          final entries = snapshot.data ?? const <TranslationHistoryEntry>[];
+          if (entries.isEmpty) {
+            return const Center(child: Text('暂无翻译记录'));
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            itemCount: entries.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final entry = entries[index];
+              return Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => Navigator.pop(context, entry),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              '原文',
+                              style: TextStyle(
+                                color: AppColors.muted,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              _time(entry.createdAt),
+                              style: const TextStyle(
+                                color: AppColors.muted,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          entry.source,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 14, height: 1.35),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          '译文',
+                          style: TextStyle(
+                            color: AppColors.navy,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          entry.translation,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 15, height: 1.4),
+                        ),
+                        const SizedBox(height: 8),
+                        const Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '点击重新载入',
+                            style: TextStyle(
+                              color: AppColors.orange,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    ),
+  );
+}
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.initial, required this.api});
   final AppSettings initial;
@@ -437,7 +616,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   TokenBalance? _tokenBalance;
   String? _balanceError;
   String _balanceToken = '';
-  String _version = '0.3.1';
+  String _version = '0.4.0';
   @override
   void initState() {
     super.initState();

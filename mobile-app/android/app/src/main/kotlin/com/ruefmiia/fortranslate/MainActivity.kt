@@ -63,6 +63,15 @@ class MainActivity : FlutterActivity() {
                     stopService(Intent(this, OverlayService::class.java))
                     result.success(null)
                 }
+                "history" -> result.success(OverlayService.history(this))
+                "addHistory" -> {
+                    OverlayService.addHistory(
+                        this,
+                        call.argument<String>("source") ?: "",
+                        call.argument<String>("translation") ?: "",
+                    )
+                    result.success(null)
+                }
                 "consumeLaunchRequest" -> result.success(consumeLaunchRequest(intent))
                 else -> result.notImplemented()
             }

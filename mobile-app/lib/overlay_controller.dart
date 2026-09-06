@@ -17,6 +17,28 @@ class OverlayLaunchRequest {
   final bool autoTranslate;
 }
 
+class TranslationHistoryEntry {
+  const TranslationHistoryEntry({
+    required this.source,
+    required this.translation,
+    required this.createdAt,
+  });
+
+  factory TranslationHistoryEntry.fromMap(Map<Object?, Object?> value) {
+    return TranslationHistoryEntry(
+      source: value['source']?.toString() ?? '',
+      translation: value['translation']?.toString() ?? '',
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        (value['createdAt'] as num?)?.toInt() ?? 0,
+      ),
+    );
+  }
+
+  final String source;
+  final String translation;
+  final DateTime createdAt;
+}
+
 class OverlayController {
   OverlayController() : _channel = const MethodChannel(_channelName);
 
@@ -71,4 +93,23 @@ class OverlayController {
       false;
 
   Future<void> stop() => _channel.invokeMethod<void>('stop');
+
+  Future<void> addHistory({
+    required String source,
+    required String translation,
+  }) => _channel.invokeMethod<void>('addHistory', {
+    'source': source,
+    'translation': translation,
+  });
+
+  Future<List<TranslationHistoryEntry>> history() async {
+    final value = await _channel.invokeListMethod<Object?>('history');
+    return (value ?? const <Object?>[])
+        .whereType<Map>()
+        .map(
+          (item) =>
+              TranslationHistoryEntry.fromMap(Map<Object?, Object?>.from(item)),
+        )
+        .toList();
+  }
 }
