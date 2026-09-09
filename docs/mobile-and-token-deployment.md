@@ -50,7 +50,7 @@ runuser -u fortranslate -- bash -c 'set -a; . /etc/fortranslate/backend.env; set
 ## 三、手机安装与验证
 
 1. 将 `app-release.apk` 发送到手机并安装。
-2. 打开设置，填写 `http://47.116.136.58:18787` 和该使用者的独立令牌。
+2. 打开设置，选择“服务令牌”并填写该使用者的独立令牌；服务地址已内置，无需填写。
 3. 点击“测试连接”并保存。
 4. 分别测试泰文、英文、Emoji 对话和多行文本。
 

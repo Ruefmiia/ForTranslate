@@ -22,6 +22,8 @@ python -m venv .venv
 - `FORTRANSLATE_DATABASE_PATH`：SQLite 文件路径。
 - `FORTRANSLATE_MAX_IMAGE_BYTES`：图片上限，默认 10MB。
 - `FORTRANSLATE_MAX_TEXT_CHARS`：单次翻译原文字符数上限，默认 3000；超限请求在调用模型前返回 413。
+- `FORTRANSLATE_TEXT_CACHE_TTL_SECONDS`：文本翻译缓存有效期，默认 600 秒；设为 0 可关闭。
+- `FORTRANSLATE_TEXT_CACHE_MAX_ENTRIES`：进程内最多缓存的文本翻译条数，默认 256；设为 0 可关闭。
 - `FORTRANSLATE_DEFAULT_TOKEN_QUOTA_YUAN`：新建独立令牌的默认额度，默认 5 元。
 - `FORTRANSLATE_INPUT_PRICE_PER_MILLION`：每百万输入 Token 价格，默认 3 元。
 - `FORTRANSLATE_OUTPUT_PRICE_PER_MILLION`：每百万输出 Token 价格，默认 9 元。
@@ -39,10 +41,12 @@ python -m venv .venv
 - `GET /v1/glossary`：列出术语。
 - `PUT /v1/glossary`：按源词新增或更新术语，JSON 字段为 `source`、`target`、`note`。
 - `DELETE /v1/glossary/{id}`：删除术语。
-- `GET /v1/usage`：汇总请求数和模型输入、输出 Token。
-- `GET /v1/token/usage`：查询当前认证令牌自己的额度、余额和累计 Token；全局管理员兼容令牌返回不限额。
+- `GET /v1/usage`：汇总请求数、模型输入/输出 Token、缓存命中数和命中率。
+- `GET /v1/token/usage`：查询当前认证令牌自己的额度、余额、累计 Token 和缓存命中情况；全局管理员兼容令牌返回不限额。
 
 文本翻译只注入在原文或上下文中命中的术语；图片翻译因 OCR 在模型侧完成，会注入完整术语表。Token 数据采用上游返回的 usage，按请求持久化到 SQLite。
+
+相同令牌在缓存有效期内提交相同文本、上下文、模型和术语规则时，会直接返回缓存结果；并发的相同请求只调用一次模型。缓存按令牌隔离，命中请求记录为 0 Token、0 计费单位，并在响应中返回 `"cached": true`。缓存仅保存在当前后端进程内，重启后自动清空。
 
 ## 独立访问令牌
 

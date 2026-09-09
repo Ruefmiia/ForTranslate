@@ -6,6 +6,7 @@ import 'direct_api_client.dart';
 import 'models.dart';
 import 'overlay_controller.dart';
 import 'settings_repository.dart';
+import 'translation_rules_generated.dart';
 
 void main() => runApp(const ForTranslateApp());
 
@@ -112,13 +113,28 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
   Future<void> _paste() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data?.text != null) _sourceController.text = data!.text!;
+    final text = data?.text;
+    if (text == null) return;
+    if (text.length > maxTranslationChars) {
+      if (mounted) {
+        setState(() {
+          _error =
+              '剪贴板内容共 ${text.length} 个字符，超过 $maxTranslationChars 字限制，请分段粘贴';
+        });
+      }
+      return;
+    }
+    _sourceController.text = text;
   }
 
   Future<void> _translate() async {
     final text = _sourceController.text.trim();
     if (text.isEmpty) {
       setState(() => _error = '请先输入或粘贴需要翻译的文字');
+      return;
+    }
+    if (text.length > maxTranslationChars) {
+      setState(() => _error = '原文不能超过 $maxTranslationChars 个字符');
       return;
     }
     FocusScope.of(context).unfocus();
@@ -336,6 +352,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
       const SizedBox(height: 8),
       TextField(
         controller: _sourceController,
+        maxLength: maxTranslationChars,
         minLines: 4,
         maxLines: 9,
         style: const TextStyle(fontSize: 15, height: 1.4),
@@ -445,10 +462,12 @@ class _TranslationScreenState extends State<TranslationScreen> {
         if (value.uncertainties.isNotEmpty)
           _details('不确定项', value.uncertainties),
         if (value.entities.isNotEmpty) _details('实体', value.entities),
-        if (value.inputTokens + value.outputTokens > 0) ...[
+        if (value.cached || value.inputTokens + value.outputTokens > 0) ...[
           const SizedBox(height: 12),
           Text(
-            'Token ${value.inputTokens} → ${value.outputTokens}',
+            value.cached
+                ? '缓存命中 · 本次未调用模型'
+                : 'Token ${value.inputTokens} → ${value.outputTokens}',
             style: const TextStyle(color: AppColors.muted, fontSize: 12),
           ),
         ],
@@ -616,7 +635,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   TokenBalance? _tokenBalance;
   String? _balanceError;
   String _balanceToken = '';
-  String _version = '0.4.0';
+  String _version = '0.5.0';
   @override
   void initState() {
     super.initState();

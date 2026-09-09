@@ -15,9 +15,14 @@
         <button id="open-settings" class="quiet-button" type="button">设置</button>
       </div>
     </div>
+    <div id="balance" class="balance" role="status" aria-live="polite">正在读取额度…</div>
     <div class="field">
-      <label for="source-text">原文</label>
-      <textarea id="source-text" maxlength="10000" placeholder="粘贴需要翻译的内容…"></textarea>
+      <div class="field-heading">
+        <label for="source-text">原文</label>
+        <output id="source-count" for="source-text">0 / 3000</output>
+      </div>
+      <textarea id="source-text" maxlength="3000" aria-describedby="source-help" placeholder="粘贴需要翻译的内容…"></textarea>
+      <div id="source-help" class="field-help">单次最多 3,000 个字符，超长内容请分段翻译。</div>
     </div>
     <div class="translate-actions">
       <button id="translate" class="primary" type="button">翻译</button>

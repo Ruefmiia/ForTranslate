@@ -5,8 +5,9 @@ import 'package:http/http.dart' as http;
 import 'models.dart';
 
 class ApiException implements Exception {
-  const ApiException(this.message);
+  const ApiException(this.message, {this.statusCode});
   final String message;
+  final int? statusCode;
   @override
   String toString() => message;
 }
@@ -18,6 +19,22 @@ class ForTranslateApi {
   }) : _client = client ?? http.Client();
   final http.Client _client;
   final Duration timeout;
+
+  String _serviceError(int statusCode, String? detail) {
+    switch (statusCode) {
+      case 401:
+        return '访问令牌无效或已停用，请在设置中更新令牌';
+      case 413:
+        return '原文不能超过 3000 个字符，请缩短后重试';
+      case 429:
+        return '翻译额度已用完，请联系管理员充值';
+      case 502:
+        return '模型服务暂时不可用，请稍后重试';
+      default:
+        if (statusCode >= 500) return '翻译服务暂时不可用，请稍后重试';
+        return detail ?? '翻译服务返回 $statusCode';
+    }
+  }
 
   Future<void> testConnection({
     required String baseUrl,
@@ -86,7 +103,8 @@ class ForTranslateApi {
           : <String, dynamic>{};
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw ApiException(
-          payload['detail']?.toString() ?? '翻译服务返回 ${response.statusCode}',
+          _serviceError(response.statusCode, payload['detail']?.toString()),
+          statusCode: response.statusCode,
         );
       }
       return payload;

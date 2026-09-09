@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'api_client.dart';
 import 'local_glossary.dart';
 import 'models.dart';
+import 'translation_rules_generated.dart';
 
 class DirectApiClient {
   DirectApiClient({http.Client? client, LocalGlossary? glossary})
@@ -34,8 +35,7 @@ class DirectApiClient {
                     '${t.source} => ${t.target}${t.note.isEmpty ? '' : '（${t.note}）'}',
               )
               .join('\n');
-    final prompt =
-        '把用户文字翻译成自然、准确的简体中文。保留说话人标记、换行、emoji、语气和专有名词，不要省略。术语优先遵循：\n$glossary\n只返回 JSON：{"translation":"...","notes":[],"uncertainties":[],"entities":[]}';
+    final prompt = '$translationSystemPrompt\n\n术语表：\n$glossary';
     try {
       final r = await _client
           .post(
@@ -57,10 +57,13 @@ class DirectApiClient {
           .timeout(const Duration(seconds: 60));
       final data = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
       if (r.statusCode < 200 || r.statusCode >= 300) {
-        throw ApiException(
-          (data['error'] as Map?)?['message']?.toString() ??
-              '模型 API 返回 ${r.statusCode}',
-        );
+        final detail = (data['error'] as Map?)?['message']?.toString();
+        throw ApiException(switch (r.statusCode) {
+          401 || 403 => '大模型 API Key 无效或无权访问当前模型',
+          429 => '大模型 API 额度不足或请求过于频繁',
+          >= 500 => '大模型服务暂时不可用，请稍后重试',
+          _ => detail ?? '模型 API 返回 ${r.statusCode}',
+        }, statusCode: r.statusCode);
       }
       final result =
           jsonDecode(

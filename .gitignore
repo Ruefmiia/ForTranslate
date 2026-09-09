@@ -11,3 +11,6 @@ Thumbs.db
 node_modules/
 dist/
 coverage/
+fortranslation令牌.txt
+docs/fortranslation令牌.txt
+docs/令牌管理速查.txt

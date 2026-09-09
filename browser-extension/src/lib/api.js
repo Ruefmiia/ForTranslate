@@ -1,5 +1,10 @@
 import { getSettings, normalizeBaseUrl } from "./config.js";
 import { listGlossaryDrafts } from "./glossary-drafts.js";
+import {
+  MAX_MATCHED_TERMS,
+  MAX_TEXT_CHARS,
+  SYSTEM_PROMPT
+} from "./translation-rules.generated.js";
 
 function normalizeResult(data) {
   const translation = data?.translation ?? data?.translated_text ?? data?.text;
@@ -12,8 +17,25 @@ function normalizeResult(data) {
     notes: Array.isArray(data.notes) ? data.notes : [],
     uncertainties: Array.isArray(data.uncertainties) ? data.uncertainties : [],
     entities: Array.isArray(data.entities) ? data.entities : [],
-    usage: data.usage ?? null
+    usage: data.usage ?? null,
+    cached: data.cached === true
   };
+}
+
+function serviceError(status, detail) {
+  if (status === 401) return "访问令牌无效或已停用，请在设置中更新令牌";
+  if (status === 413) return `原文不能超过 ${MAX_TEXT_CHARS} 个字符，请缩短后重试`;
+  if (status === 429) return "翻译额度已用完，请联系管理员充值";
+  if (status === 502) return "模型服务暂时不可用，请稍后重试";
+  if (status >= 500) return "翻译服务暂时不可用，请稍后重试";
+  return detail || `翻译服务返回 ${status}`;
+}
+
+function directApiError(status, detail) {
+  if (status === 401 || status === 403) return "大模型 API Key 无效或无权访问当前模型";
+  if (status === 429) return "大模型 API 额度不足或请求过于频繁";
+  if (status >= 500) return "大模型服务暂时不可用，请稍后重试";
+  return detail || `模型 API 返回 ${status}`;
 }
 
 async function request(path, options) {
@@ -34,7 +56,7 @@ async function request(path, options) {
     });
     const payload = await response.json().catch(() => null);
     if (!response.ok) {
-      throw new Error(payload?.detail || payload?.message || `翻译服务返回 ${response.status}`);
+      throw new Error(serviceError(response.status, payload?.detail || payload?.message));
     }
     return payload;
   } catch (error) {
@@ -47,6 +69,9 @@ async function request(path, options) {
 }
 
 export async function translateText(text, context = "") {
+  if (text.length > MAX_TEXT_CHARS) {
+    throw new Error(`原文不能超过 ${MAX_TEXT_CHARS} 个字符，请缩短后重试`);
+  }
   const settings = await getSettings();
   if (settings.translationMode === "direct") return translateDirect(text, settings);
   const payload = await request("/v1/translate/text", {
@@ -63,7 +88,7 @@ async function translateDirect(text, settings) {
   const bundled = await fetch(chrome.runtime.getURL("assets/glossary.json")).then((response) => response.json());
   const merged = new Map((bundled.terms || []).map((term) => [term.source, term]));
   for (const term of await listGlossaryDrafts()) merged.set(term.source, term);
-  const matches = [...merged.values()].filter((term) => text.includes(term.source)).sort((a, b) => b.source.length - a.source.length).slice(0, 40);
+  const matches = [...merged.values()].filter((term) => text.includes(term.source)).sort((a, b) => b.source.length - a.source.length).slice(0, MAX_MATCHED_TERMS);
   const glossary = matches.length ? matches.map((term) => `${term.source} => ${term.target}${term.note ? `（${term.note}）` : ""}`).join("\n") : "无匹配术语。";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), settings.requestTimeoutMs);
@@ -72,12 +97,12 @@ async function translateDirect(text, settings) {
       method: "POST", signal: controller.signal,
       headers: { "Authorization": `Bearer ${settings.llmApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: settings.llmModel, temperature: 0.2, response_format: { type: "json_object" }, messages: [
-        { role: "system", content: `把用户文字翻译成自然、准确的简体中文。保留说话人标记、换行、emoji、语气和专有名词，不要省略。术语优先遵循：\n${glossary}\n只返回 JSON：{"translation":"...","notes":[],"uncertainties":[],"entities":[]}` },
+        { role: "system", content: `${SYSTEM_PROMPT}\n\n术语表：\n${glossary}` },
         { role: "user", content: text }
       ]})
     });
     const payload = await response.json();
-    if (!response.ok) throw new Error(payload?.error?.message || `模型 API 返回 ${response.status}`);
+    if (!response.ok) throw new Error(directApiError(response.status, payload?.error?.message));
     const result = JSON.parse(payload.choices?.[0]?.message?.content || "");
     result.usage = { input_tokens: payload.usage?.prompt_tokens || 0, output_tokens: payload.usage?.completion_tokens || 0 };
     return normalizeResult(result);
@@ -85,6 +110,12 @@ async function translateDirect(text, settings) {
     if (error?.name === "AbortError") throw new Error("模型请求超时");
     throw error;
   } finally { clearTimeout(timeoutId); }
+}
+
+export async function getTokenBalance() {
+  const settings = await getSettings();
+  if (settings.translationMode === "direct") return null;
+  return request("/v1/token/usage", { method: "GET" });
 }
 
 export async function translateImageUrl(imageUrl) {

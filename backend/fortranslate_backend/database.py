@@ -9,6 +9,8 @@ import hmac
 import secrets
 from typing import Iterator
 
+from .translation_rules_generated import MAX_MATCHED_TERMS
+
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS glossary_terms (
@@ -28,7 +30,8 @@ CREATE TABLE IF NOT EXISTS usage_events (
     input_tokens INTEGER NOT NULL DEFAULT 0 CHECK(input_tokens >= 0),
     output_tokens INTEGER NOT NULL DEFAULT 0 CHECK(output_tokens >= 0),
     token_id INTEGER,
-    billing_units INTEGER NOT NULL DEFAULT 0 CHECK(billing_units >= 0)
+    billing_units INTEGER NOT NULL DEFAULT 0 CHECK(billing_units >= 0),
+    cache_hit INTEGER NOT NULL DEFAULT 0 CHECK(cache_hit IN (0, 1))
 );
 CREATE INDEX IF NOT EXISTS idx_usage_events_created_at ON usage_events(created_at);
 CREATE TABLE IF NOT EXISTS access_tokens (
@@ -72,6 +75,7 @@ class Database:
             self._ensure_column(connection, "access_tokens", "used_units", "INTEGER NOT NULL DEFAULT 0")
             self._ensure_column(connection, "usage_events", "token_id", "INTEGER")
             self._ensure_column(connection, "usage_events", "billing_units", "INTEGER NOT NULL DEFAULT 0")
+            self._ensure_column(connection, "usage_events", "cache_hit", "INTEGER NOT NULL DEFAULT 0")
             connection.execute("CREATE INDEX IF NOT EXISTS idx_usage_events_token_id ON usage_events(token_id)")
 
     @staticmethod
@@ -110,7 +114,8 @@ class Database:
 
     def matching_terms(self, *texts: str) -> list[dict]:
         combined = "\n".join(texts).casefold()
-        return [term for term in self.list_terms() if term["source"].casefold() in combined]
+        matches = [term for term in self.list_terms() if term["source"].casefold() in combined]
+        return sorted(matches, key=lambda term: len(term["source"]), reverse=True)[:MAX_MATCHED_TERMS]
 
     def create_access_token(self, name: str, quota_units: int = 5_000_000) -> tuple[dict, str]:
         clean_name = name.strip()
@@ -138,7 +143,8 @@ class Database:
                 """SELECT t.id, t.name, t.token_hint, t.enabled, t.created_at, t.last_used_at,
                           t.quota_units, t.used_units, COUNT(u.id) AS requests,
                           COALESCE(SUM(u.input_tokens), 0) AS input_tokens,
-                          COALESCE(SUM(u.output_tokens), 0) AS output_tokens
+                          COALESCE(SUM(u.output_tokens), 0) AS output_tokens,
+                          COALESCE(SUM(u.cache_hit), 0) AS cache_hits
                    FROM access_tokens t LEFT JOIN usage_events u ON u.token_id = t.id
                    GROUP BY t.id ORDER BY t.id"""
             ).fetchall()
@@ -187,13 +193,17 @@ class Database:
         return row is not None and bool(row["enabled"]) and row["used_units"] < row["quota_units"]
 
     def record_usage(self, endpoint: str, source: str, model: str, input_tokens: int,
-                     output_tokens: int, token_id: int | None = None, billing_units: int = 0) -> None:
+                     output_tokens: int, token_id: int | None = None, billing_units: int = 0,
+                     cache_hit: bool = False) -> None:
         with self.connect() as connection:
             connection.execute(
                 """INSERT INTO usage_events(created_at, endpoint, source, model, input_tokens, output_tokens,
-                                             token_id, billing_units)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (utc_now(), endpoint, source, model, input_tokens, output_tokens, token_id, billing_units),
+                                             token_id, billing_units, cache_hit)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    utc_now(), endpoint, source, model, input_tokens, output_tokens,
+                    token_id, billing_units, 1 if cache_hit else 0,
+                ),
             )
             if token_id is not None:
                 connection.execute(
@@ -211,11 +221,13 @@ class Database:
                 return None
             totals = connection.execute(
                 """SELECT COUNT(*) AS requests, COALESCE(SUM(input_tokens), 0) AS input_tokens,
-                          COALESCE(SUM(output_tokens), 0) AS output_tokens
+                          COALESCE(SUM(output_tokens), 0) AS output_tokens,
+                          COALESCE(SUM(cache_hit), 0) AS cache_hits
                    FROM usage_events WHERE token_id = ?""", (token_id,),
             ).fetchone()
             recent = connection.execute(
-                """SELECT created_at, endpoint, source, model, input_tokens, output_tokens, billing_units
+                """SELECT created_at, endpoint, source, model, input_tokens, output_tokens, billing_units,
+                          cache_hit
                    FROM usage_events WHERE token_id = ? ORDER BY id DESC LIMIT ?""",
                 (token_id, recent_limit),
             ).fetchall()
@@ -227,7 +239,8 @@ class Database:
                 """SELECT t.id, t.name, t.quota_units, t.used_units,
                           COUNT(u.id) AS requests,
                           COALESCE(SUM(u.input_tokens), 0) AS input_tokens,
-                          COALESCE(SUM(u.output_tokens), 0) AS output_tokens
+                          COALESCE(SUM(u.output_tokens), 0) AS output_tokens,
+                          COALESCE(SUM(u.cache_hit), 0) AS cache_hits
                    FROM access_tokens t
                    LEFT JOIN usage_events u ON u.token_id = t.id
                    WHERE t.id = ? AND t.enabled = 1
@@ -259,15 +272,23 @@ class Database:
         with self.connect() as connection:
             totals = connection.execute(
                 """SELECT COUNT(*) AS requests, COALESCE(SUM(input_tokens), 0) AS input_tokens,
-                          COALESCE(SUM(output_tokens), 0) AS output_tokens
+                          COALESCE(SUM(output_tokens), 0) AS output_tokens,
+                          COALESCE(SUM(cache_hit), 0) AS cache_hits
                    FROM usage_events"""
             ).fetchone()
             groups = connection.execute(
                 """SELECT endpoint, COUNT(*) AS requests, SUM(input_tokens) AS input_tokens,
-                          SUM(output_tokens) AS output_tokens
+                          SUM(output_tokens) AS output_tokens, SUM(cache_hit) AS cache_hits
                    FROM usage_events GROUP BY endpoint ORDER BY endpoint"""
             ).fetchall()
         result = dict(totals)
         result["total_tokens"] = result["input_tokens"] + result["output_tokens"]
-        result["by_endpoint"] = [dict(row) | {"total_tokens": row["input_tokens"] + row["output_tokens"]} for row in groups]
+        result["cache_hit_rate"] = result["cache_hits"] / result["requests"] if result["requests"] else 0.0
+        result["by_endpoint"] = [
+            dict(row) | {
+                "total_tokens": row["input_tokens"] + row["output_tokens"],
+                "cache_hit_rate": row["cache_hits"] / row["requests"] if row["requests"] else 0.0,
+            }
+            for row in groups
+        ]
         return result

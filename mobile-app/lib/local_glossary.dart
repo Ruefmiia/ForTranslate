@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'translation_rules_generated.dart';
 
 class GlossaryTerm {
   const GlossaryTerm(this.source, this.target, this.note);
@@ -10,7 +11,10 @@ class LocalGlossary {
   List<GlossaryTerm>? _terms;
   Future<List<GlossaryTerm>> matches(String text) async {
     _terms ??= await _load();
-    return _terms!.where((t) => text.contains(t.source)).take(40).toList();
+    return _terms!
+        .where((t) => text.contains(t.source))
+        .take(maxMatchedTerms)
+        .toList();
   }
 
   Future<List<GlossaryTerm>> _load() async {

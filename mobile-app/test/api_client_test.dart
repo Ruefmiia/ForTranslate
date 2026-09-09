@@ -47,7 +47,31 @@ void main() {
         isA<ApiException>().having(
           (error) => error.message,
           'message',
-          'Invalid or missing access token',
+          '访问令牌无效或已停用，请在设置中更新令牌',
+        ),
+      ),
+    );
+  });
+
+  test('maps quota exhaustion to an actionable message', () async {
+    final client = MockClient(
+      (_) async => http.Response(
+        jsonEncode({'detail': 'Token quota exhausted'}),
+        429,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+    expect(
+      () => ForTranslateApi(client: client).translate(
+        baseUrl: 'http://example.test',
+        token: 'ft_test',
+        text: 'สวัสดี',
+      ),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.message,
+          'message',
+          '翻译额度已用完，请联系管理员充值',
         ),
       ),
     );

@@ -2,16 +2,21 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from decimal import Decimal, ROUND_CEILING
+import hashlib
 import hmac
+import json
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import MutableHeaders
 
 from .config import Settings
 from .database import Database
 from .llm import LLMClient, ModelError
+from .translation_cache import TextTranslationCache
+from .translation_rules_generated import RULES_VERSION
 from .version import __version__
 
 
@@ -65,6 +70,10 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     settings = settings or Settings.from_env()
     database = Database(settings.database_path)
     client = llm_client or LLMClient(settings)
+    text_cache = TextTranslationCache(
+        ttl_seconds=settings.text_cache_ttl_seconds,
+        max_entries=settings.text_cache_max_entries,
+    )
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -82,6 +91,7 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     app.state.database = database
     app.state.llm_client = client
     app.state.settings = settings
+    app.state.text_cache = text_cache
 
     def authenticate(authorization: str | None = Header(default=None)) -> dict:
         scheme, _, token = (authorization or "").partition(" ")
@@ -113,6 +123,25 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
             raise HTTPException(status_code=429, detail="Token quota exhausted")
         return token_id
 
+    def text_cache_key(payload: TextTranslationRequest, identity: dict, terms: list[dict]) -> str:
+        cache_identity = identity.get("id")
+        if cache_identity is None:
+            cache_identity = f'legacy:{identity["name"]}'
+        material = {
+            "identity": cache_identity,
+            "model": settings.llm_model,
+            "base_url": settings.llm_base_url,
+            "rules": RULES_VERSION,
+            "text": payload.text,
+            "context": payload.context,
+            "terms": [
+                {"source": term["source"], "target": term["target"], "note": term["note"]}
+                for term in terms
+            ],
+        }
+        encoded = json.dumps(material, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
     auth = [Depends(authenticate)]
 
     @app.get("/health", dependencies=auth)
@@ -129,14 +158,17 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
         token_id = require_quota(identity)
         terms = database.matching_terms(payload.text, payload.context)
         try:
-            result, usage = client.translate_text(payload.text, payload.context, terms)
+            result, usage, cache_hit = text_cache.get_or_compute(
+                text_cache_key(payload, identity, terms),
+                lambda: client.translate_text(payload.text, payload.context, terms),
+            )
         except ModelError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
         database.record_usage(
             "text", payload.source, settings.llm_model, usage["input_tokens"], usage["output_tokens"],
-            token_id=token_id, billing_units=billing_units(usage),
+            token_id=token_id, billing_units=billing_units(usage), cache_hit=cache_hit,
         )
-        return result | {"usage": usage}
+        return result | {"usage": usage, "cached": cache_hit}
 
     @app.post("/v1/translate/image")
     async def translate_image(
@@ -145,7 +177,7 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
         source: str = Form(default=""),
         identity: dict = Depends(authenticate),
     ) -> dict:
-        token_id = require_quota(identity)
+        token_id = await run_in_threadpool(require_quota, identity)
         content_length = request.headers.get("content-length")
         if content_length:
             try:
@@ -160,13 +192,26 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
             raise HTTPException(status_code=413, detail="Image is too large")
         if not data:
             raise HTTPException(status_code=422, detail="Image is empty")
+        terms = await run_in_threadpool(database.list_terms)
         try:
-            result, usage = client.translate_image(data, image.content_type, source, database.list_terms())
+            result, usage = await run_in_threadpool(
+                client.translate_image,
+                data,
+                image.content_type,
+                source,
+                terms,
+            )
         except ModelError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
-        database.record_usage(
-            "image", source, settings.llm_model, usage["input_tokens"], usage["output_tokens"],
-            token_id=token_id, billing_units=billing_units(usage),
+        await run_in_threadpool(
+            database.record_usage,
+            "image",
+            source,
+            settings.llm_model,
+            usage["input_tokens"],
+            usage["output_tokens"],
+            token_id=token_id,
+            billing_units=billing_units(usage),
         )
         return result | {"usage": usage}
 
@@ -220,6 +265,8 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
             "requests": balance["requests"],
             "input_tokens": balance["input_tokens"],
             "output_tokens": balance["output_tokens"],
+            "cache_hits": balance["cache_hits"],
+            "cache_hit_rate": balance["cache_hits"] / balance["requests"] if balance["requests"] else 0.0,
             "exhausted": used_units >= quota_units,
         }
 

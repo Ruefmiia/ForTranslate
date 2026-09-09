@@ -1,6 +1,7 @@
 (() => {
   if (window.__forTranslateLoaded) return;
   window.__forTranslateLoaded = true;
+  const MAX_TEXT_CHARS = globalThis.ForTranslateRules?.maxTextChars ?? 3000;
 
   const host = document.createElement("div");
   host.id = "fortranslate-root";
@@ -18,6 +19,7 @@
         display: none; place-items: center; transition: transform 160ms ease, background 160ms ease;
       }
       .ft-trigger:hover { transform: translateY(-2px); background: #1d435f; }
+      .ft-trigger[data-error="true"] { background: #a33a20; }
       .ft-trigger:focus-visible, button:focus-visible { outline: 3px solid #f4a261; outline-offset: 2px; }
       .ft-panel {
         position: fixed; z-index: 2147483647; width: min(280px, calc(100vw - 24px));
@@ -180,9 +182,10 @@
     showPanel();
   }
 
-  function renderError(message) {
-    body.innerHTML = `<div class="ft-error" role="alert"></div><div class="ft-status">请检查扩展设置中的服务地址</div>`;
+  function renderError(message, recovery = "请按上方提示处理后重试") {
+    body.innerHTML = `<div class="ft-error" role="alert"></div><div class="ft-status"></div>`;
     body.querySelector(".ft-error").textContent = message;
+    body.querySelector(".ft-status").textContent = recovery;
     showPanel();
   }
 
@@ -209,10 +212,17 @@
     if (host.contains(event.target)) return;
     setTimeout(() => {
       const text = readSelection(event.target);
-      if (!text || text.length > 10000) return hideTrigger();
+      if (!text) return hideTrigger();
       selectedText = text;
       captureAnchor(event.target);
       const rect = selectionRect(event.target);
+      const tooLong = text.length > MAX_TEXT_CHARS;
+      trigger.dataset.error = String(tooLong);
+      trigger.textContent = tooLong ? "!" : "译";
+      trigger.setAttribute(
+        "aria-label",
+        tooLong ? `选中文字超过 ${MAX_TEXT_CHARS} 字符限制` : "翻译选中文字"
+      );
       position(trigger, rect, 42);
       trigger.style.display = "grid";
     }, 0);
@@ -224,6 +234,13 @@
 
   trigger.addEventListener("click", () => {
     hideTrigger();
+    if (selectedText.length > MAX_TEXT_CHARS) {
+      renderError(
+        `选中文字共 ${selectedText.length.toLocaleString()} 个字符，超过 ${MAX_TEXT_CHARS.toLocaleString()} 字限制`,
+        "请缩短选区或分段翻译"
+      );
+      return;
+    }
     renderLoading(selectedText);
     chrome.runtime.sendMessage({ type: "TRANSLATE_TEXT", text: selectedText });
   });

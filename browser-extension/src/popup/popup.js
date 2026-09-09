@@ -1,8 +1,12 @@
-import { translateText } from "../lib/api.js";
+import { getTokenBalance, translateText } from "../lib/api.js";
 import { getSettings } from "../lib/config.js";
 import { saveGlossaryDraft } from "../lib/glossary-drafts.js";
+import { MAX_TEXT_CHARS } from "../lib/translation-rules.generated.js";
 
 const sourceInput = document.querySelector("#source-text");
+const sourceCount = document.querySelector("#source-count");
+const sourceHelp = document.querySelector("#source-help");
+const balance = document.querySelector("#balance");
 const translateButton = document.querySelector("#translate");
 const status = document.querySelector("#status");
 const result = document.querySelector("#result");
@@ -13,11 +17,55 @@ const termStatus = document.querySelector("#term-status");
 const termSource = document.querySelector("#term-source");
 const termTarget = document.querySelector("#term-target");
 const termNote = document.querySelector("#term-note");
+const defaultSourceHelp = `单次最多 ${MAX_TEXT_CHARS.toLocaleString()} 个字符，超长内容请分段翻译。`;
+
+sourceInput.maxLength = MAX_TEXT_CHARS;
 
 getSettings().then((settings) => {
   const fontSize = Math.max(12, Math.min(Number(settings.resultFontSize) || 13, 18));
   document.documentElement.style.setProperty("--result-font-size", `${fontSize}px`);
 });
+
+function updateSourceCount() {
+  const count = sourceInput.value.length;
+  sourceCount.textContent = `${count.toLocaleString()} / ${MAX_TEXT_CHARS.toLocaleString()}`;
+  const nearLimit = count >= Math.floor(MAX_TEXT_CHARS * 0.9);
+  sourceCount.classList.toggle("warning", nearLimit);
+  sourceHelp.classList.toggle("warning", nearLimit);
+  if (sourceHelp.classList.contains("error") && count > 0) {
+    sourceHelp.textContent = defaultSourceHelp;
+    sourceHelp.className = nearLimit ? "field-help warning" : "field-help";
+  }
+}
+
+function showSourceIssue(message) {
+  sourceHelp.textContent = message;
+  sourceHelp.className = "field-help error";
+}
+
+async function refreshBalance() {
+  const settings = await getSettings();
+  if (settings.translationMode === "direct") {
+    balance.textContent = "自有 API 模式 · 费用由模型服务商结算";
+    balance.className = "balance";
+    return;
+  }
+  if (!settings.accessToken) {
+    balance.textContent = "尚未配置服务令牌";
+    balance.className = "balance warning";
+    return;
+  }
+  try {
+    const value = await getTokenBalance();
+    balance.textContent = value?.unlimited
+      ? "管理员令牌 · 不计额度"
+      : `剩余额度 ¥${Number(value?.remaining_yuan || 0).toFixed(2)} · 已请求 ${Number(value?.requests || 0).toLocaleString()} 次`;
+    balance.className = value?.exhausted ? "balance error" : "balance";
+  } catch (error) {
+    balance.textContent = error.message;
+    balance.className = "balance error";
+  }
+}
 
 document.querySelector("#version").textContent = `v${chrome.runtime.getManifest().version}`;
 
@@ -72,6 +120,14 @@ translateButton.addEventListener("click", async () => {
   if (!text) {
     status.textContent = "请先粘贴需要翻译的内容";
     status.className = "status error";
+    showSourceIssue("请输入或粘贴需要翻译的内容。");
+    sourceInput.focus();
+    return;
+  }
+  if (text.length > MAX_TEXT_CHARS) {
+    status.textContent = `原文不能超过 ${MAX_TEXT_CHARS} 个字符，请缩短后重试`;
+    status.className = "status error";
+    showSourceIssue(`内容超过 ${MAX_TEXT_CHARS.toLocaleString()} 字，请缩短或分段翻译。`);
     sourceInput.focus();
     return;
   }
@@ -86,9 +142,12 @@ translateButton.addEventListener("click", async () => {
     resultText.textContent = translated.translation;
     const inputTokens = translated.usage?.input_tokens;
     const outputTokens = translated.usage?.output_tokens;
-    usage.textContent = Number.isFinite(inputTokens) ? `${inputTokens} 输入 · ${outputTokens || 0} 输出 Token` : "";
+    usage.textContent = translated.cached
+      ? "缓存命中 · 本次未调用模型"
+      : Number.isFinite(inputTokens) ? `${inputTokens} 输入 · ${outputTokens || 0} 输出 Token` : "";
     result.hidden = false;
     await remember(text, translated.translation);
+    await refreshBalance();
   } catch (error) {
     status.textContent = error.message;
     status.className = "status error";
@@ -97,6 +156,20 @@ translateButton.addEventListener("click", async () => {
     translateButton.textContent = "翻译";
   }
 });
+
+sourceInput.addEventListener("input", updateSourceCount);
+sourceInput.addEventListener("paste", (event) => {
+  const pasted = event.clipboardData?.getData("text") || "";
+  const selectedLength = (sourceInput.selectionEnd || 0) - (sourceInput.selectionStart || 0);
+  const nextLength = sourceInput.value.length - selectedLength + pasted.length;
+  if (nextLength <= MAX_TEXT_CHARS) return;
+  event.preventDefault();
+  showSourceIssue(
+    `粘贴内容将达到 ${nextLength.toLocaleString()} 字，超过 ${MAX_TEXT_CHARS.toLocaleString()} 字限制，请分段粘贴。`
+  );
+});
+updateSourceCount();
+refreshBalance();
 
 document.querySelector("#copy").addEventListener("click", async (event) => {
   await navigator.clipboard.writeText(resultText.textContent);

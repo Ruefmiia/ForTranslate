@@ -13,6 +13,9 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.IBinder
 import android.provider.Settings
+import android.text.Editable
+import android.text.InputFilter
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -165,6 +168,7 @@ class OverlayService : Service() {
 
         val input = EditText(this).apply {
             hint = "粘贴需要翻译的文字"
+            filters = arrayOf(InputFilter.LengthFilter(TranslationRules.MAX_TEXT_CHARS))
             textSize = 14f
             minLines = 2
             maxLines = 4
@@ -172,6 +176,20 @@ class OverlayService : Service() {
             setPadding(dp(8), dp(6), dp(8), dp(6))
             background = background(Color.WHITE, 8)
         }
+        val inputCount = TextView(this).apply {
+            text = "0 / ${TranslationRules.MAX_TEXT_CHARS}"
+            textSize = 11f
+            gravity = Gravity.END
+            setTextColor(Color.rgb(83, 103, 117))
+            setPadding(0, dp(2), dp(2), 0)
+        }
+        input.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(value: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(value: CharSequence?, start: Int, before: Int, count: Int) {
+                inputCount.text = "${value?.length ?: 0} / ${TranslationRules.MAX_TEXT_CHARS}"
+            }
+            override fun afterTextChanged(value: Editable?) = Unit
+        })
         val result = TextView(this).apply {
             text = "译文会显示在这里"
             textSize = 15f
@@ -204,6 +222,7 @@ class OverlayService : Service() {
 
         card.addView(header, LinearLayout.LayoutParams(MATCH, dp(40)))
         card.addView(input, LinearLayout.LayoutParams(MATCH, WRAP))
+        card.addView(inputCount, LinearLayout.LayoutParams(MATCH, WRAP))
         card.addView(resultScroll, LinearLayout.LayoutParams(MATCH, 0, 1f))
         card.addView(status, LinearLayout.LayoutParams(MATCH, WRAP))
         card.addView(actions, LinearLayout.LayoutParams(MATCH, dp(44)))
@@ -236,9 +255,18 @@ class OverlayService : Service() {
 
         paste.setOnClickListener {
             val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            input.setText(
-                clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString().orEmpty(),
-            )
+            val pasted = clipboard.primaryClip?.getItemAt(0)
+                ?.coerceToText(this)
+                ?.toString()
+                .orEmpty()
+            if (pasted.length > TranslationRules.MAX_TEXT_CHARS) {
+                status.text =
+                    "剪贴板内容共 ${pasted.length} 个字符，超过 " +
+                    "${TranslationRules.MAX_TEXT_CHARS} 字限制，请分段粘贴"
+                status.visibility = View.VISIBLE
+                return@setOnClickListener
+            }
+            input.setText(pasted)
             input.setSelection(input.text.length)
             if (autoTranslate && input.text.isNotBlank()) {
                 releaseInputFocus(input)
@@ -276,6 +304,11 @@ class OverlayService : Service() {
             status.visibility = View.VISIBLE
             return
         }
+        if (text.length > TranslationRules.MAX_TEXT_CHARS) {
+            status.text = "原文不能超过 ${TranslationRules.MAX_TEXT_CHARS} 个字符"
+            status.visibility = View.VISIBLE
+            return
+        }
         busy = true
         button.isEnabled = false
         button.alpha = .55f
@@ -310,14 +343,17 @@ class OverlayService : Service() {
             .put("text", text)
             .put("context", "")
             .put("source", "android_overlay")
-        return post("$SERVICE_URL/v1/translate/text", token, body).getString("translation")
+        return post(
+            "$SERVICE_URL/v1/translate/text",
+            token,
+            body,
+            serviceRequest = true,
+        ).getString("translation")
     }
 
     private fun direct(text: String): String {
         if (apiKey.isBlank() || model.isBlank()) error("请先在 App 完成自有 API 设置")
-        val prompt = "把用户文字翻译成自然、准确的简体中文。保留说话人标记、换行、emoji、语气和专有名词，不要省略。术语优先遵循：\n" +
-            glossary(text) +
-            "\n只返回包含 translation、notes、uncertainties、entities 的 JSON。"
+        val prompt = TranslationRules.SYSTEM_PROMPT + "\n\n术语表：\n" + glossary(text)
         val messages = JSONArray()
             .put(JSONObject().put("role", "system").put("content", prompt))
             .put(JSONObject().put("role", "user").put("content", text))
@@ -346,7 +382,7 @@ class OverlayService : Service() {
         }
         return found
             .sortedByDescending { it.getString("source").length }
-            .take(40)
+            .take(TranslationRules.MAX_MATCHED_TERMS)
             .joinToString("\n") {
                 val note = it.optString("note")
                 it.getString("source") + " => " + it.getString("target") +
@@ -355,7 +391,12 @@ class OverlayService : Service() {
             .ifBlank { "无匹配术语。" }
     }
 
-    private fun post(address: String, bearer: String, body: JSONObject): JSONObject {
+    private fun post(
+        address: String,
+        bearer: String,
+        body: JSONObject,
+        serviceRequest: Boolean = false,
+    ): JSONObject {
         val connection = URL(address).openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
         connection.connectTimeout = 15_000
@@ -366,13 +407,33 @@ class OverlayService : Service() {
         connection.outputStream.use {
             it.write(body.toString().toByteArray(Charsets.UTF_8))
         }
-        val payload = (if (connection.responseCode in 200..299) {
+        val responseCode = connection.responseCode
+        val payload = (if (responseCode in 200..299) {
             connection.inputStream
         } else {
             connection.errorStream
         }).bufferedReader().use { it.readText() }
-        if (connection.responseCode !in 200..299) {
-            error(JSONObject(payload).optString("detail", "服务返回 ${connection.responseCode}"))
+        if (responseCode !in 200..299) {
+            val detail = runCatching { JSONObject(payload).optString("detail") }.getOrNull()
+            error(
+                if (serviceRequest) {
+                    when (responseCode) {
+                        401 -> "访问令牌无效或已停用，请在 App 设置中更新令牌"
+                        413 -> "原文不能超过 ${TranslationRules.MAX_TEXT_CHARS} 个字符，请缩短后重试"
+                        429 -> "翻译额度已用完，请联系管理员充值"
+                        502 -> "模型服务暂时不可用，请稍后重试"
+                        in 500..599 -> "翻译服务暂时不可用，请稍后重试"
+                        else -> detail?.takeIf { it.isNotBlank() } ?: "翻译服务返回 $responseCode"
+                    }
+                } else {
+                    when (responseCode) {
+                        401, 403 -> "大模型 API Key 无效或无权访问当前模型"
+                        429 -> "大模型 API 额度不足或请求过于频繁"
+                        in 500..599 -> "大模型服务暂时不可用，请稍后重试"
+                        else -> detail?.takeIf { it.isNotBlank() } ?: "模型 API 返回 $responseCode"
+                    }
+                },
+            )
         }
         return JSONObject(payload)
     }

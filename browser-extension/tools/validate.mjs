@@ -1,9 +1,12 @@
 import { readFile, access } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 
+execFileSync(process.execPath, ["../tools/generate-translation-rules.mjs", "--check"], { stdio: "inherit" });
 const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 const glossary = JSON.parse(await readFile("assets/glossary.json", "utf8"));
+const popupHtml = await readFile("src/popup/popup.html", "utf8");
+const contentScript = await readFile("src/content.js", "utf8");
 const referencedFiles = [
   manifest.background.service_worker,
   manifest.action.default_popup,
@@ -33,6 +36,9 @@ if (manifest.version !== packageJson.version) {
 }
 if (glossary.version !== "1.2.3" || glossary.terms.length !== 191) {
   throw new Error("Bundled glossary 1.2.3 with 191 terms is required");
+}
+if (!popupHtml.includes('maxlength="3000"') || !contentScript.includes("MAX_TEXT_CHARS")) {
+  throw new Error("Browser translation inputs must enforce the 3000 character limit");
 }
 const {
   glossaryDraftFilename,

@@ -6,6 +6,7 @@ class TranslationResult {
     this.entities = const [],
     this.inputTokens = 0,
     this.outputTokens = 0,
+    this.cached = false,
   });
 
   factory TranslationResult.fromJson(Map<String, dynamic> json) {
@@ -24,6 +25,7 @@ class TranslationResult {
       entities: _strings(json['entities']),
       inputTokens: usage['input_tokens'] as int? ?? 0,
       outputTokens: usage['output_tokens'] as int? ?? 0,
+      cached: json['cached'] == true,
     );
   }
   final String translation;
@@ -32,6 +34,7 @@ class TranslationResult {
   final List<String> entities;
   final int inputTokens;
   final int outputTokens;
+  final bool cached;
   static List<String> _strings(Object? value) => value is List
       ? value.whereType<Object>().map((item) => item.toString()).toList()
       : const [];
@@ -45,6 +48,8 @@ class TokenBalance {
     this.usedYuan,
     this.remainingYuan,
     this.requests = 0,
+    this.cacheHits = 0,
+    this.cacheHitRate = 0,
     this.exhausted = false,
   });
 
@@ -57,6 +62,8 @@ class TokenBalance {
       usedYuan: unlimited ? null : _number(json['used_yuan']),
       remainingYuan: unlimited ? null : _number(json['remaining_yuan']),
       requests: (json['requests'] as num?)?.toInt() ?? 0,
+      cacheHits: (json['cache_hits'] as num?)?.toInt() ?? 0,
+      cacheHitRate: _number(json['cache_hit_rate']) ?? 0,
       exhausted: json['exhausted'] == true,
     );
   }
@@ -67,6 +74,8 @@ class TokenBalance {
   final double? usedYuan;
   final double? remainingYuan;
   final int requests;
+  final int cacheHits;
+  final double cacheHitRate;
   final bool exhausted;
 
   static double? _number(Object? value) {

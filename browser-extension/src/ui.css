@@ -25,6 +25,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .shell { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px 16px 32px; }
 .topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .top-actions, .result-actions { display: flex; align-items: center; gap: 8px; }
+.balance { margin-top: 10px; color: var(--muted); font-size: 12px; }
+.balance.warning, .field-help.warning, #source-count.warning { color: var(--tamarind); }
+.balance.error { color: var(--danger); }
 .brand { display: flex; align-items: center; gap: 9px; font-weight: 780; font-size: 16px; letter-spacing: -.02em; }
 .version { color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: 0; }
 .tone { color: var(--tamarind); font-size: 21px; line-height: 1; transform: translateY(-2px); }
@@ -35,6 +38,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .quiet-button:hover, .icon-button:hover { background: var(--mist); }
 .field { display: grid; gap: 7px; margin: 16px 0; }
 .field label, .field-title { font-weight: 700; color: #304a5a; font-size: 12px; }
+.field-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.field-heading output, .field-help { color: var(--muted); font-size: 12px; }
+.field-help.error { color: var(--danger); }
 textarea, input[type="text"], input[type="url"], input[type="password"], input[type="number"] {
   width: 100%; border: 1px solid #bfcdd7; border-radius: 12px; padding: 11px 12px;
   background: #fff; color: var(--ink); transition: border-color 160ms ease, box-shadow 160ms ease;

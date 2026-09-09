@@ -5,6 +5,8 @@ from decimal import Decimal
 import os
 from pathlib import Path
 
+from .translation_rules_generated import MAX_TEXT_CHARS
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -16,7 +18,9 @@ class Settings:
     max_image_bytes: int = 10 * 1024 * 1024
     request_timeout_seconds: float = 90.0
     llm_thinking: str = ""
-    max_text_chars: int = 3000
+    max_text_chars: int = MAX_TEXT_CHARS
+    text_cache_ttl_seconds: float = 600.0
+    text_cache_max_entries: int = 256
     default_token_quota_yuan: Decimal = Decimal("5")
     input_price_per_million: Decimal = Decimal("3")
     output_price_per_million: Decimal = Decimal("9")
@@ -35,7 +39,9 @@ class Settings:
             max_image_bytes=int(os.getenv("FORTRANSLATE_MAX_IMAGE_BYTES", str(10 * 1024 * 1024))),
             request_timeout_seconds=float(os.getenv("FORTRANSLATE_REQUEST_TIMEOUT_SECONDS", "90")),
             llm_thinking=llm_thinking,
-            max_text_chars=int(os.getenv("FORTRANSLATE_MAX_TEXT_CHARS", "3000")),
+            max_text_chars=int(os.getenv("FORTRANSLATE_MAX_TEXT_CHARS", str(MAX_TEXT_CHARS))),
+            text_cache_ttl_seconds=float(os.getenv("FORTRANSLATE_TEXT_CACHE_TTL_SECONDS", "600")),
+            text_cache_max_entries=int(os.getenv("FORTRANSLATE_TEXT_CACHE_MAX_ENTRIES", "256")),
             default_token_quota_yuan=Decimal(os.getenv("FORTRANSLATE_DEFAULT_TOKEN_QUOTA_YUAN", "5")),
             input_price_per_million=Decimal(os.getenv("FORTRANSLATE_INPUT_PRICE_PER_MILLION", "3")),
             output_price_per_million=Decimal(os.getenv("FORTRANSLATE_OUTPUT_PRICE_PER_MILLION", "9")),

@@ -1,5 +1,8 @@
+import asyncio
 from pathlib import Path
+import threading
 
+import httpx
 from fastapi.testclient import TestClient
 
 from fortranslate_backend.app import create_app
@@ -28,6 +31,19 @@ class FakeLLM:
         )
 
 
+class BlockingImageLLM(FakeLLM):
+    def __init__(self):
+        super().__init__()
+        self.started = threading.Event()
+        self.release = threading.Event()
+
+    def translate_image(self, image, media_type, source, terms):
+        self.started.set()
+        if not self.release.wait(timeout=5):
+            raise RuntimeError("Timed out waiting for the concurrency assertion")
+        return super().translate_image(image, media_type, source, terms)
+
+
 def make_client(tmp_path: Path, max_image_bytes: int = 1024, max_text_chars: int = 3000):
     settings = Settings(
         "secret",
@@ -48,7 +64,7 @@ def auth():
 
 def test_authentication_and_health(tmp_path):
     with make_client(tmp_path)[0] as client:
-        assert client.app.version == "0.5.0"
+        assert client.app.version == "0.6.0"
         assert client.get("/health").status_code == 401
         assert client.get("/health", headers=auth()).json() == {"status": "ok"}
         preflight = client.options(
@@ -100,6 +116,8 @@ def test_current_token_can_only_read_its_own_balance(tmp_path):
             "requests": 1,
             "input_tokens": 12,
             "output_tokens": 5,
+            "cache_hits": 0,
+            "cache_hit_rate": 0.0,
             "exhausted": False,
         }
 
@@ -155,13 +173,17 @@ def test_glossary_is_injected_and_usage_is_recorded(tmp_path):
             "requests": 1,
             "input_tokens": 12,
             "output_tokens": 5,
+            "cache_hits": 0,
             "total_tokens": 17,
+            "cache_hit_rate": 0.0,
             "by_endpoint": [{
                 "endpoint": "text",
                 "requests": 1,
                 "input_tokens": 12,
                 "output_tokens": 5,
+                "cache_hits": 0,
                 "total_tokens": 17,
+                "cache_hit_rate": 0.0,
             }],
         }
         assert client.delete(f'/v1/glossary/{term.json()["id"]}', headers=auth()).json() == {"deleted": True}
@@ -201,6 +223,50 @@ def test_token_quota_is_billed_and_blocks_the_next_request(tmp_path):
         assert fake.text_calls == 2
 
 
+def test_repeated_text_translation_uses_token_scoped_cache(tmp_path):
+    client, fake = make_client(tmp_path)
+    with client:
+        record, token = client.app.state.database.create_access_token("cache-user")
+        headers = {"Authorization": f"Bearer {token}"}
+        first = client.post("/v1/translate/text", headers=headers, json={"text": "สวัสดี"})
+        second = client.post("/v1/translate/text", headers=headers, json={"text": "สวัสดี"})
+
+        assert first.status_code == 200
+        assert first.json()["cached"] is False
+        assert second.status_code == 200
+        assert second.json()["cached"] is True
+        assert second.json()["usage"] == {"input_tokens": 0, "output_tokens": 0}
+        assert fake.text_calls == 1
+
+        usage = client.app.state.database.token_usage(record["id"])
+        assert usage["requests"] == 2
+        assert usage["cache_hits"] == 1
+        assert usage["used_units"] == 81
+
+
+def test_text_cache_does_not_cross_access_tokens(tmp_path):
+    client, fake = make_client(tmp_path)
+    with client:
+        _, first_token = client.app.state.database.create_access_token("cache-user-1")
+        _, second_token = client.app.state.database.create_access_token("cache-user-2")
+        payload = {"text": "ข้อความเดียวกัน"}
+
+        first = client.post(
+            "/v1/translate/text",
+            headers={"Authorization": f"Bearer {first_token}"},
+            json=payload,
+        )
+        second = client.post(
+            "/v1/translate/text",
+            headers={"Authorization": f"Bearer {second_token}"},
+            json=payload,
+        )
+
+        assert first.json()["cached"] is False
+        assert second.json()["cached"] is False
+        assert fake.text_calls == 2
+
+
 def test_image_translation_and_validation(tmp_path):
     client, fake = make_client(tmp_path, max_image_bytes=8)
     with client:
@@ -224,3 +290,39 @@ def test_image_translation_and_validation(tmp_path):
             files={"image": ("x.png", b"123456789", "image/png")},
         )
         assert too_large.status_code == 413
+
+
+def test_image_translation_does_not_block_the_event_loop(tmp_path):
+    settings = Settings(
+        "secret",
+        "model-key",
+        "https://model.example/v1",
+        "test-model",
+        tmp_path / "test.db",
+    )
+    fake = BlockingImageLLM()
+    app = create_app(settings, fake)
+    app.state.database.initialize()
+
+    async def scenario():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            image_request = asyncio.create_task(
+                client.post(
+                    "/v1/translate/image",
+                    headers=auth(),
+                    files={"image": ("x.png", b"png", "image/png")},
+                )
+            )
+            assert await asyncio.to_thread(fake.started.wait, 2)
+            try:
+                health = await asyncio.wait_for(
+                    client.get("/health", headers=auth()),
+                    timeout=2,
+                )
+                assert health.status_code == 200
+            finally:
+                fake.release.set()
+            assert (await asyncio.wait_for(image_request, timeout=2)).status_code == 200
+
+    asyncio.run(scenario())

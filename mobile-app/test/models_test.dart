@@ -15,4 +15,13 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('recognizes a cached translation response', () {
+    final result = TranslationResult.fromJson({
+      'translation': '中文',
+      'cached': true,
+      'usage': {'input_tokens': 0, 'output_tokens': 0},
+    });
+    expect(result.cached, isTrue);
+  });
 }
