@@ -10,7 +10,15 @@
 - `fortranslate-backend.service` 已运行，当前监听 `127.0.0.1:18787`。
 - Bearer Token、DeepSeek V4 Flash 文本翻译、Token 统计和扩展 PNA 预检均验证成功。
 - Nginx、Memos、PostgreSQL 及现有 Node 服务未被修改。
-- 图片翻译暂不使用，因为 `deepseek-v4-flash` 不支持图片输入。
+- 文本翻译模型名按 DeepSeek 当前官方文档更新为 `deepseek-flash`。
+- 图片翻译暂不使用，因为 `deepseek-flash` 不支持图片输入。
+
+服务器环境变量应使用：
+
+```text
+FORTRANSLATE_LLM_BASE_URL=https://api.deepseek.com
+FORTRANSLATE_LLM_MODEL=deepseek-flash
+```
 
 ## 明日操作一：关闭 DeepSeek 思考模式
 

@@ -2,6 +2,10 @@
 
 本项目按组件独立记录版本。版本格式遵循 Semantic Versioning。
 
+## Backend 0.6.1 - 2026-09-13
+
+- 将默认 OpenAI 兼容地址和模型更新为 `https://api.deepseek.com`、`deepseek-flash`。
+
 ## Extension 0.7.0 - 2026-09-09
 
 - 侧边栏新增 3000 字实时计数、粘贴超限提示和当前服务令牌余额。

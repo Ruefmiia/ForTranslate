@@ -8,6 +8,14 @@ from pathlib import Path
 from .translation_rules_generated import MAX_TEXT_CHARS
 
 
+LEGACY_DEEPSEEK_MODELS = {"deepseek-chat", "deepseek-v4-flash"}
+
+
+def normalize_llm_model(value: str) -> str:
+    model = value.strip()
+    return "deepseek-flash" if model in LEGACY_DEEPSEEK_MODELS else model
+
+
 @dataclass(frozen=True)
 class Settings:
     access_token: str
@@ -33,8 +41,8 @@ class Settings:
         return cls(
             access_token=os.getenv("FORTRANSLATE_ACCESS_TOKEN", ""),
             llm_api_key=os.getenv("FORTRANSLATE_LLM_API_KEY", ""),
-            llm_base_url=os.getenv("FORTRANSLATE_LLM_BASE_URL", "https://api.openai.com/v1"),
-            llm_model=os.getenv("FORTRANSLATE_LLM_MODEL", "gpt-4.1-mini"),
+            llm_base_url=os.getenv("FORTRANSLATE_LLM_BASE_URL", "https://api.deepseek.com"),
+            llm_model=normalize_llm_model(os.getenv("FORTRANSLATE_LLM_MODEL", "deepseek-flash")),
             database_path=Path(os.getenv("FORTRANSLATE_DATABASE_PATH", "./data/fortranslate.db")),
             max_image_bytes=int(os.getenv("FORTRANSLATE_MAX_IMAGE_BYTES", str(10 * 1024 * 1024))),
             request_timeout_seconds=float(os.getenv("FORTRANSLATE_REQUEST_TIMEOUT_SECONDS", "90")),

@@ -16,8 +16,8 @@ python -m venv .venv
 
 - `FORTRANSLATE_ACCESS_TOKEN`：兼容旧客户端的全局 Bearer Token；可与 SQLite 独立令牌同时使用。
 - `FORTRANSLATE_LLM_API_KEY`：大模型 API Key；必填。
-- `FORTRANSLATE_LLM_BASE_URL`：兼容 OpenAI 的 API 根地址，默认 `https://api.openai.com/v1`。
-- `FORTRANSLATE_LLM_MODEL`：支持文本和图片输入的模型名。
+- `FORTRANSLATE_LLM_BASE_URL`：兼容 OpenAI 的 API 根地址，默认 `https://api.deepseek.com`。
+- `FORTRANSLATE_LLM_MODEL`：文本翻译模型名，默认使用 DeepSeek 官方推荐的 `deepseek-flash`。
 - `FORTRANSLATE_LLM_THINKING`：可选值 `enabled` 或 `disabled`；DeepSeek 翻译建议设为 `disabled`。
 - `FORTRANSLATE_DATABASE_PATH`：SQLite 文件路径。
 - `FORTRANSLATE_MAX_IMAGE_BYTES`：图片上限，默认 10MB。
@@ -28,6 +28,8 @@ python -m venv .venv
 - `FORTRANSLATE_INPUT_PRICE_PER_MILLION`：每百万输入 Token 价格，默认 3 元。
 - `FORTRANSLATE_OUTPUT_PRICE_PER_MILLION`：每百万输出 Token 价格，默认 9 元。
 - `FORTRANSLATE_REQUEST_TIMEOUT_SECONDS`：上游请求超时秒数。
+
+为兼容已有部署，读取到旧默认名 `deepseek-chat` 或 `deepseek-v4-flash` 时会自动改用 `deepseek-flash`；其他自定义模型名不会被替换。
 
 项目不主动加载 `.env`，避免引入额外依赖；可通过 PowerShell、Docker 或进程管理器注入环境变量。
 

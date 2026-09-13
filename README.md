@@ -7,7 +7,7 @@
 | 组件 | 版本 |
 |---|---:|
 | 浏览器扩展 | 0.7.0 |
-| 轻量后端 | 0.6.0 |
+| 轻量后端 | 0.6.1 |
 | Android App | 0.5.0 |
 
 版本规则与发布流程见 [docs/versioning.md](docs/versioning.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
