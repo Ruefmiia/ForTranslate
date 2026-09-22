@@ -19,6 +19,7 @@ const balance = $("#balance");
 const settingsDialog = $("#settings-dialog");
 const historyDialog = $("#history-dialog");
 const installDialog = $("#install-dialog");
+const shortcutDialog = $("#shortcut-dialog");
 const tokenInput = $("#access-token");
 const rememberToken = $("#remember-token");
 const historyEnabled = $("#history-enabled");
@@ -26,6 +27,7 @@ const settingsError = $("#settings-error");
 const saveSettingsButton = $("#save-settings");
 const networkStatus = $("#network-status");
 const installButton = $("#install-button");
+const shortcutEndpoint = new URL("/v1/translate/text", window.location.origin).href;
 
 let activeRequest = null;
 let deferredInstallPrompt = null;
@@ -191,6 +193,26 @@ function openSettings() {
   settingsError.textContent = "";
   openDialog(settingsDialog);
   setTimeout(() => tokenInput.focus(), 30);
+}
+
+function openShortcutSetup() {
+  const token = getToken();
+  const state = $("#shortcut-token-state");
+  $("#shortcut-endpoint").textContent = shortcutEndpoint;
+  $("#copy-shortcut-token").disabled = !token;
+  state.className = token ? "shortcut-token-state ready" : "shortcut-token-state error";
+  state.textContent = token ? "访问令牌已准备好，可按需复制。" : "请先在设置中保存访问令牌。";
+  closeDialog(settingsDialog);
+  openDialog(shortcutDialog);
+}
+
+async function copyShortcutValue(value, successMessage) {
+  try {
+    await navigator.clipboard.writeText(value);
+    showToast(successMessage);
+  } catch {
+    showToast("复制失败，请长按配置手动复制");
+  }
 }
 
 async function submitSettings(event) {
@@ -367,6 +389,19 @@ copyButton.addEventListener("click", async () => {
 
 $("#settings-button").addEventListener("click", openSettings);
 $("#settings-form").addEventListener("submit", submitSettings);
+$("#ios-shortcut-button").addEventListener("click", openShortcutSetup);
+$("#copy-shortcut-endpoint").addEventListener("click", async () => {
+  await copyShortcutValue(shortcutEndpoint, "接口地址已复制");
+});
+$("#copy-shortcut-token").addEventListener("click", async () => {
+  const token = getToken();
+  if (!token) {
+    closeDialog(shortcutDialog);
+    openSettings();
+    return;
+  }
+  await copyShortcutValue(token, "访问令牌已复制，设置完成后请清空剪贴板");
+});
 $("#toggle-token").addEventListener("click", (event) => {
   const show = tokenInput.type === "password";
   tokenInput.type = show ? "text" : "password";

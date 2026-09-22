@@ -99,10 +99,48 @@
       </div>
       <label class="check-row"><input id="remember-token" type="checkbox" checked><span><strong>记住令牌</strong><small>仅保存在当前设备。</small></span></label>
       <label class="check-row"><input id="history-enabled" type="checkbox" checked><span><strong>保存历史</strong><small>最多 20 条。</small></span></label>
+      <section class="settings-feature" aria-labelledby="ios-shortcut-title">
+        <div><strong id="ios-shortcut-title">iOS 快捷翻译</strong><small>从系统分享菜单翻译选中文字。</small></div>
+        <button id="ios-shortcut-button" class="secondary-button" type="button">设置</button>
+      </section>
       <p id="settings-error" class="field-error" role="alert" hidden></p>
       <button id="save-settings" class="primary-button" type="submit">验证并保存</button>
       <p class="privacy-note">请勿在公共设备上保存令牌。</p>
     </form>
+  </dialog>
+
+  <dialog id="shortcut-dialog" class="app-dialog">
+    <section class="dialog-card shortcut-dialog-card">
+      <div class="dialog-heading">
+        <div><h2>iOS 快捷翻译</h2></div>
+        <button class="icon-button dialog-close" type="button" aria-label="关闭快捷指令设置"><svg aria-hidden="true"><use href="#icon-clear"/></svg></button>
+      </div>
+      <p class="dialog-intro">创建后，可从其他 App 的分享菜单直接发送文字并复制译文。</p>
+      <div id="shortcut-token-state" class="shortcut-token-state" role="status"></div>
+      <div class="shortcut-copy-grid">
+        <button id="copy-shortcut-endpoint" class="secondary-button" type="button">复制接口地址</button>
+        <button id="copy-shortcut-token" class="secondary-button" type="button">复制访问令牌</button>
+      </div>
+      <ol class="shortcut-steps">
+        <li><strong>创建快捷指令</strong><span>点击下方按钮，在“快捷指令”中创建并命名为 ForTranslation。</span></li>
+        <li><strong>添加网络请求</strong><span>使用“获取 URL 内容”，方法选 POST，请求正文选 JSON。</span></li>
+        <li><strong>填写请求</strong><span>标头填写 Authorization；JSON 添加 text、context、source。</span></li>
+        <li><strong>处理译文</strong><span>读取返回字典中的 translation，然后复制到剪贴板并显示结果。</span></li>
+        <li><strong>加入分享菜单</strong><span>在快捷指令详情中开启“在共享表单中显示”，接收类型选择“文本”。</span></li>
+      </ol>
+      <details class="shortcut-details">
+        <summary>查看完整配置</summary>
+        <dl>
+          <div><dt>接口</dt><dd><code id="shortcut-endpoint"></code></dd></div>
+          <div><dt>方法</dt><dd><code>POST</code></dd></div>
+          <div><dt>标头</dt><dd><code>Authorization: Bearer [访问令牌]</code></dd></div>
+          <div><dt>JSON</dt><dd><code>text=[快捷指令输入] · context=&quot;&quot; · source=&quot;ios-shortcut&quot;</code></dd></div>
+          <div><dt>译文字段</dt><dd><code>translation</code></dd></div>
+        </dl>
+      </details>
+      <a class="primary-button shortcut-open-button" href="shortcuts://create-shortcut">打开“快捷指令”</a>
+      <p class="privacy-note">访问令牌属于敏感信息。设置完成后请清空剪贴板，不要共享包含令牌的快捷指令。</p>
+    </section>
   </dialog>
 
   <dialog id="history-dialog" class="app-dialog history-dialog">
