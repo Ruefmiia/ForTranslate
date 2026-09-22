@@ -35,7 +35,6 @@
         <span class="brand-name">ForTranslation</span>
       </a>
       <div class="header-actions">
-        <span id="network-status" class="network-status" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span>在线</span></span>
         <button id="install-button" class="icon-button install-button" type="button" aria-label="安装应用" title="安装应用" hidden><svg aria-hidden="true"><use href="#icon-download"/></svg></button>
         <button id="history-button" class="icon-button" type="button" aria-label="打开翻译历史" title="翻译历史"><svg aria-hidden="true"><use href="#icon-clock"/></svg></button>
         <button id="settings-button" class="icon-button" type="button" aria-label="打开设置" title="设置"><svg aria-hidden="true"><use href="#icon-settings"/></svg></button>
@@ -45,10 +44,6 @@
 
   <main class="workspace">
     <h1 class="sr-only">ForTranslation</h1>
-    <section class="service-strip" aria-label="服务状态">
-      <div id="balance" class="balance" role="status" aria-live="polite"><span class="balance-label">服务状态</span><span>等待连接</span></div>
-    </section>
-
     <section class="translator" aria-label="文字翻译">
       <div class="panel source-panel">
         <div class="panel-heading">
@@ -93,6 +88,10 @@
         <button class="icon-button dialog-close" type="button" aria-label="关闭设置"><svg aria-hidden="true"><use href="#icon-clear"/></svg></button>
       </div>
       <p class="dialog-intro">填写访问令牌后即可使用。</p>
+      <div class="settings-status" aria-label="服务状态">
+        <span id="network-status" class="network-status" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span>在线</span></span>
+        <div id="balance" class="balance" role="status" aria-live="polite"><span class="balance-label">服务状态</span><span>等待连接</span></div>
+      </div>
       <label class="field-label" for="access-token">访问令牌</label>
       <div class="password-field">
         <input id="access-token" name="access-token" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required>
