@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "ForTranslation翻译",
+  "name": "ForTranslation",
   "short_name": "ForTranslate",
-  "description": "以泰语和泰娱内容为重点的自然中文翻译工具",
+  "description": "翻译工具",
   "lang": "zh-CN",
   "dir": "ltr",
   "start_url": "/",

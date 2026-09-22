@@ -71,7 +71,7 @@ function setLoading(loading) {
   resultPanel.classList.toggle("loading", loading);
   resultPanel.setAttribute("aria-busy", String(loading));
   translateButton.classList.toggle("loading", loading);
-  translateButton.querySelector(".button-label").textContent = loading ? "取消翻译" : "翻译成自然中文";
+  translateButton.querySelector(".button-label").textContent = loading ? "取消" : "翻译";
   sourceInput.readOnly = loading;
 }
 
@@ -98,9 +98,9 @@ function addDetails(title, values) {
 function renderResult(result) {
   resultText.textContent = result.translation;
   resultDetails.replaceChildren();
-  addDetails("翻译说明", result.notes || []);
+  addDetails("说明", result.notes || []);
   addDetails("不确定项", result.uncertainties || []);
-  addDetails("名称与实体", result.entities || []);
+  addDetails("名称", result.entities || []);
 
   const inputTokens = Number(result.usage?.input_tokens || 0);
   const outputTokens = Number(result.usage?.output_tokens || 0);
@@ -170,7 +170,7 @@ async function runTranslation() {
     const result = await translateText(token, text, activeRequest.signal);
     renderResult(result);
     if (getSettings().historyEnabled) addHistory(text, result.translation);
-    setGlobalStatus(result.cached ? "已从短期缓存返回译文。" : "翻译完成。即使关闭页面，原文仍会保留在当前会话。", false);
+    setGlobalStatus(result.cached ? "已使用缓存结果。" : "翻译完成。", false);
     await refreshBalance();
   } catch (error) {
     const message = error instanceof Error ? error.message : "翻译失败，请稍后重试";
@@ -210,7 +210,7 @@ async function submitSettings(event) {
     saveToken(token, rememberToken.checked);
     saveSettings({ rememberToken: rememberToken.checked, historyEnabled: historyEnabled.checked });
     closeDialog(settingsDialog);
-    showToast("连接成功，设置已保存");
+    showToast("设置已保存");
     await refreshBalance();
   } catch (error) {
     settingsError.textContent = error.message;
@@ -228,7 +228,7 @@ function renderHistory() {
   if (!getSettings().historyEnabled) {
     const empty = document.createElement("p");
     empty.className = "history-empty";
-    empty.textContent = "本地历史已在设置中关闭。";
+    empty.textContent = "历史记录已关闭。";
     list.append(empty);
     $("#clear-history").hidden = true;
     return;
@@ -238,7 +238,7 @@ function renderHistory() {
   if (!entries.length) {
     const empty = document.createElement("p");
     empty.className = "history-empty";
-    empty.textContent = "暂无翻译记录。完成一次翻译后会显示在这里。";
+    empty.textContent = "暂无记录。";
     list.append(empty);
     return;
   }
@@ -263,7 +263,7 @@ function renderHistory() {
       sourceInput.value = entry.source;
       updateSourceCount();
       renderResult({ translation: entry.translation, notes: [], uncertainties: [], entities: [], usage: null, cached: false });
-      resultMeta.textContent = "来自本地历史";
+      resultMeta.textContent = "历史记录";
       closeDialog(historyDialog);
       sourceInput.focus();
     });
@@ -276,8 +276,8 @@ function updateNetworkStatus() {
   networkStatus.classList.toggle("offline", !online);
   networkStatus.lastElementChild.textContent = online ? "在线" : "离线";
   translateButton.disabled = !online;
-  if (!online) setGlobalStatus("当前设备离线。应用仍可打开，但翻译需要网络连接。", true);
-  else if (globalStatus.textContent.startsWith("当前设备离线")) setGlobalStatus();
+  if (!online) setGlobalStatus("当前离线，无法翻译。", true);
+  else if (globalStatus.textContent.startsWith("当前离线")) setGlobalStatus();
 }
 
 function setupInstall() {
@@ -316,7 +316,7 @@ function setupServiceWorker() {
         });
       });
     } catch {
-      setGlobalStatus("应用离线能力暂不可用，但在线翻译不受影响。", true);
+      setGlobalStatus("离线功能暂不可用。", true);
     }
   });
 }
@@ -378,10 +378,10 @@ $("#history-button").addEventListener("click", () => {
   openDialog(historyDialog);
 });
 $("#clear-history").addEventListener("click", () => {
-  if (!window.confirm("确定清空这台设备上的全部翻译历史吗？")) return;
+  if (!window.confirm("确定清空历史吗？")) return;
   clearHistory();
   renderHistory();
-  showToast("本地历史已清空");
+  showToast("历史已清空");
 });
 
 for (const button of document.querySelectorAll(".dialog-close")) {
