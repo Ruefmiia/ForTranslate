@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#15324a">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="以泰语和泰娱内容为重点的自然中文翻译工具">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'self'">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+  <title>ForTranslation翻译</title>
+</head>
+<body>
+  <a class="skip-link" href="#source-text">跳到原文输入框</a>
+
+  <svg class="icon-library" aria-hidden="true">
+    <symbol id="icon-clock" viewBox="0 0 24 24"><path d="M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.86 2.86-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.55v-.1A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.86-2.86.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.3V9.55h.1A1.7 1.7 0 0 0 4.1 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06L6.56 3.7l.06.06A1.7 1.7 0 0 0 8.5 4.1a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1v-.1h4.05v.1A1.7 1.7 0 0 0 15 4.1a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.86 2.86-.06.06A1.7 1.7 0 0 0 19.4 8.5a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4.05h-.1A1.7 1.7 0 0 0 19.4 15Z"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></symbol>
+    <symbol id="icon-paste" viewBox="0 0 24 24"><path d="M9 5h6m-7 0H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8m2-16h2a2 2 0 0 1 2 2v5M9 3h6v4H9V3Z"/><path d="M17 14v7m0 0 3-3m-3 3-3-3"/></symbol>
+    <symbol id="icon-clear" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="icon-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 3h6l1 4H8l1-4Zm-2 4 1 14h8l1-14M10 11v6m4-6v6"/></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  </svg>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="ForTranslation翻译首页">
+        <span class="brand-mark" aria-hidden="true">ก่</span>
+        <span class="brand-name">ForTranslation<span>翻译</span></span>
+      </a>
+      <div class="header-actions">
+        <span id="network-status" class="network-status" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span>在线</span></span>
+        <button id="install-button" class="icon-button install-button" type="button" aria-label="安装应用" title="安装应用" hidden><svg aria-hidden="true"><use href="#icon-download"/></svg></button>
+        <button id="history-button" class="icon-button" type="button" aria-label="打开翻译历史" title="翻译历史"><svg aria-hidden="true"><use href="#icon-clock"/></svg></button>
+        <button id="settings-button" class="icon-button" type="button" aria-label="打开设置" title="设置"><svg aria-hidden="true"><use href="#icon-settings"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <h1 class="sr-only">ForTranslation文字翻译</h1>
+    <section class="service-strip" aria-label="服务状态">
+      <div id="balance" class="balance" role="status" aria-live="polite"><span class="balance-label">服务状态</span><span>等待连接</span></div>
+    </section>
+
+    <section class="translator" aria-label="文字翻译">
+      <div class="panel source-panel">
+        <div class="panel-heading">
+          <div><span class="panel-kicker">原文</span><h2>输入需要翻译的内容</h2></div>
+          <output id="source-count" for="source-text">0 / 3,000</output>
+        </div>
+        <label class="sr-only" for="source-text">需要翻译的原文</label>
+        <textarea id="source-text" rows="11" spellcheck="false" aria-describedby="source-help source-error" placeholder="粘贴泰语、英语或其他语言内容…"></textarea>
+        <div class="field-footer">
+          <p id="source-help">单次最多 3,000 个字符，超长内容请分段翻译。</p>
+          <div class="inline-actions">
+            <button id="paste-button" class="text-button" type="button"><svg aria-hidden="true"><use href="#icon-paste"/></svg><span>粘贴</span></button>
+            <button id="clear-button" class="text-button" type="button"><svg aria-hidden="true"><use href="#icon-clear"/></svg><span>清空</span></button>
+          </div>
+        </div>
+        <p id="source-error" class="field-error" role="alert" hidden></p>
+        <button id="translate-button" class="primary-button" type="button"><span class="button-label">翻译成自然中文</span><span class="button-progress" aria-hidden="true"></span></button>
+      </div>
+
+      <div class="flow-mark" aria-hidden="true"><span>TH</span><i></i><span>中</span></div>
+
+      <div id="result-panel" class="panel result-panel" aria-live="polite" aria-busy="false">
+        <div class="panel-heading">
+          <div><span class="panel-kicker">译文</span><h2>自然中文</h2></div>
+          <button id="copy-button" class="icon-button copy-button" type="button" aria-label="复制译文" title="复制译文" disabled><svg aria-hidden="true"><use href="#icon-copy"/></svg></button>
+        </div>
+        <div id="result-empty" class="result-empty"><span class="result-glyph" aria-hidden="true">译</span><p>译文会显示在这里</p><small>支持保留对话结构、Emoji 与粉丝文化语境</small></div>
+        <div id="result-content" class="result-content" hidden>
+          <p id="result-text" class="result-text"></p>
+          <p id="result-meta" class="result-meta"></p>
+          <div id="result-details" class="result-details"></div>
+        </div>
+      </div>
+    </section>
+    <p id="global-status" class="global-status" role="status" aria-live="polite"></p>
+  </main>
+
+  <dialog id="settings-dialog" class="app-dialog">
+    <form id="settings-form" method="dialog" class="dialog-card">
+      <div class="dialog-heading">
+        <div><p class="panel-kicker">设置</p><h2>连接翻译服务</h2></div>
+        <button class="icon-button dialog-close" type="button" aria-label="关闭设置"><svg aria-hidden="true"><use href="#icon-clear"/></svg></button>
+      </div>
+      <p class="dialog-intro">使用管理员提供的独立访问令牌。令牌只保存在这台设备，不会写入应用代码。</p>
+      <label class="field-label" for="access-token">访问令牌</label>
+      <div class="password-field">
+        <input id="access-token" name="access-token" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required>
+        <button id="toggle-token" class="icon-button" type="button" aria-label="显示访问令牌" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-eye"/></svg></button>
+      </div>
+      <label class="check-row"><input id="remember-token" type="checkbox" checked><span><strong>记住此设备</strong><small>关闭后，仅在当前浏览会话中保存。</small></span></label>
+      <label class="check-row"><input id="history-enabled" type="checkbox" checked><span><strong>保存本地历史</strong><small>最多保存 20 条，仅存储在当前浏览器。</small></span></label>
+      <p id="settings-error" class="field-error" role="alert" hidden></p>
+      <button id="save-settings" class="primary-button" type="submit">验证并保存</button>
+      <p class="privacy-note">请勿在公共设备上记住令牌。服务端的大模型密钥不会发送到浏览器。</p>
+    </form>
+  </dialog>
+
+  <dialog id="history-dialog" class="app-dialog history-dialog">
+    <section class="dialog-card">
+      <div class="dialog-heading">
+        <div><p class="panel-kicker">仅此设备</p><h2>翻译历史</h2></div>
+        <button class="icon-button dialog-close" type="button" aria-label="关闭历史记录"><svg aria-hidden="true"><use href="#icon-clear"/></svg></button>
+      </div>
+      <div id="history-list" class="history-list"></div>
+      <button id="clear-history" class="danger-button" type="button"><svg aria-hidden="true"><use href="#icon-trash"/></svg><span>清空全部历史</span></button>
+    </section>
+  </dialog>
+
+  <dialog id="install-dialog" class="app-dialog">
+    <section class="dialog-card compact-dialog">
+      <div class="dialog-heading">
+        <div><p class="panel-kicker">安装</p><h2>添加到主屏幕</h2></div>
+        <button class="icon-button dialog-close" type="button" aria-label="关闭安装说明"><svg aria-hidden="true"><use href="#icon-clear"/></svg></button>
+      </div>
+      <ol class="install-steps"><li>打开浏览器的分享或更多菜单。</li><li>选择“添加到主屏幕”或“安装应用”。</li><li>确认后，即可像普通 App 一样启动。</li></ol>
+    </section>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

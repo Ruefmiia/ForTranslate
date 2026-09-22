@@ -52,6 +52,13 @@ globalThis.ForTranslateRules = Object.freeze({
 `,
   ],
   [
+    "pwa/src/translation-rules.generated.js",
+    `// ${banner}
+export const TRANSLATION_RULES_VERSION = ${quoted(rules.version)};
+export const MAX_TEXT_CHARS = ${rules.max_text_chars};
+`,
+  ],
+  [
     "mobile-app/lib/translation_rules_generated.dart",
     `// ${banner}
 const String translationRulesVersion = ${dartQuoted(rules.version)};

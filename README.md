@@ -9,6 +9,7 @@
 | 浏览器扩展 | 0.7.0 |
 | 轻量后端 | 0.6.1 |
 | Android App | 0.5.0 |
+| PWA | 0.1.0 |
 
 版本规则与发布流程见 [docs/versioning.md](docs/versioning.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -19,6 +20,7 @@ ForTranslate/
 ├─ browser-extension/   Chrome / Edge 浏览器扩展
 ├─ backend/             FastAPI + SQLite 轻量翻译后端
 ├─ mobile-app/          Flutter Android 客户端
+├─ pwa/                 iOS / 鸿蒙 / Android / 桌面网页客户端
 ├─ translation-rules.json  文本翻译规则单一事实源
 ├─ tools/               跨端规则生成工具
 └─ README.md            项目总说明
@@ -28,6 +30,6 @@ ForTranslate/
 `node tools/generate-translation-rules.mjs` 更新 Python、JavaScript、Dart 和 Kotlin
 生成文件；各组件的检查命令会验证生成文件是否过期。
 
-浏览器扩展的安装与使用见 [browser-extension/README.md](browser-extension/README.md)；后端的配置、API 和测试说明见 [backend/README.md](backend/README.md)；Android 安装、设置和构建说明见 [mobile-app/README.md](mobile-app/README.md)。
+浏览器扩展的安装与使用见 [browser-extension/README.md](browser-extension/README.md)；后端的配置、API 和测试说明见 [backend/README.md](backend/README.md)；Android 安装、设置和构建说明见 [mobile-app/README.md](mobile-app/README.md)；PWA 说明见 [pwa/README.md](pwa/README.md)。
 
 服务器当前部署状态及后续操作见 [docs/server-deployment-progress.md](docs/server-deployment-progress.md)。

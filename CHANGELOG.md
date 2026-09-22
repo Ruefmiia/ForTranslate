@@ -2,6 +2,12 @@
 
 本项目按组件独立记录版本。版本格式遵循 Semantic Versioning。
 
+## PWA 0.1.0 - 2026-09-22
+
+- 新增面向 iOS、鸿蒙、Android 和桌面浏览器的文字翻译 PWA。
+- 支持独立访问令牌、额度显示、本地历史、安装到主屏幕、深色模式和离线应用外壳。
+- 使用同源 HTTPS 接口，不缓存翻译请求、访问令牌或译文。
+
 ## Backend 0.6.1 - 2026-09-13
 
 - 将默认 OpenAI 兼容地址和模型更新为 `https://api.deepseek.com`、`deepseek-flash`。

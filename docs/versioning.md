@@ -1,6 +1,6 @@
 # 版本管理规范
 
-ForTranslate 是多组件仓库，浏览器扩展、后端与移动端独立发布、独立升级。
+ForTranslate 是多组件仓库，浏览器扩展、后端、移动端与 PWA 独立发布、独立升级。
 
 ## 当前版本
 
@@ -9,8 +9,10 @@ ForTranslate 是多组件仓库，浏览器扩展、后端与移动端独立发�
 | 浏览器扩展 | 0.7.0 | `browser-extension/manifest.json` | `extension-v0.7.0` |
 | 后端 | 0.6.1 | `backend/fortranslate_backend/version.py` | `backend-v0.6.1` |
 | Android App | 0.5.0 | `mobile-app/pubspec.yaml` | `mobile-v0.5.0` |
+| PWA | 0.1.0 | `pwa/package.json` | `pwa-v0.1.0` |
 
 扩展的 `package.json` 必须与 `manifest.json` 一致，`npm run check` 会检查这一点。后端 FastAPI 元数据直接读取 `version.py`，测试会校验版本。移动端的 Android `versionName` 与 `versionCode` 由 `pubspec.yaml` 的 `version` 生成。
+PWA 版本以 `pwa/package.json` 为准，发布前运行 `npm run check`。
 
 ## 版本规则
 
@@ -36,7 +38,7 @@ ForTranslate 是多组件仓库，浏览器扩展、后端与移动端独立发�
 3. 更新 `CHANGELOG.md`，写明日期和用户可见变化。
 4. 运行后端测试与扩展检查。
 5. 提交并推送代码。
-6. 为实际发布的组件创建带注释标签，格式为 `backend-vX.Y.Z`、`extension-vX.Y.Z` 或 `mobile-vX.Y.Z`。
+6. 为实际发布的组件创建带注释标签，格式为 `backend-vX.Y.Z`、`extension-vX.Y.Z`、`mobile-vX.Y.Z` 或 `pwa-vX.Y.Z`。
 
 标签一旦推送不得移动或复用；修复后必须发布更高版本。
 
