@@ -44,7 +44,7 @@ class BlockingImageLLM(FakeLLM):
         return super().translate_image(image, media_type, source, terms)
 
 
-def make_client(tmp_path: Path, max_image_bytes: int = 1024, max_text_chars: int = 3000):
+def make_client(tmp_path: Path, max_image_bytes: int = 1024, max_text_chars: int = 3000, ios_shortcut_url: str = ""):
     settings = Settings(
         "secret",
         "model-key",
@@ -53,6 +53,7 @@ def make_client(tmp_path: Path, max_image_bytes: int = 1024, max_text_chars: int
         tmp_path / "test.db",
         max_image_bytes=max_image_bytes,
         max_text_chars=max_text_chars,
+        ios_shortcut_url=ios_shortcut_url,
     )
     fake = FakeLLM()
     return TestClient(create_app(settings, fake)), fake
@@ -64,7 +65,7 @@ def auth():
 
 def test_authentication_and_health(tmp_path):
     with make_client(tmp_path)[0] as client:
-        assert client.app.version == "0.6.1"
+        assert client.app.version == "0.7.0"
         assert client.get("/health").status_code == 401
         assert client.get("/health", headers=auth()).json() == {"status": "ok"}
         preflight = client.options(
@@ -265,6 +266,83 @@ def test_text_cache_does_not_cross_access_tokens(tmp_path):
         assert first.json()["cached"] is False
         assert second.json()["cached"] is False
         assert fake.text_calls == 2
+
+
+def test_shortcut_credential_is_scoped_billed_and_revocable(tmp_path):
+    client, fake = make_client(tmp_path)
+    with client:
+        record, token = client.app.state.database.create_access_token("ios-user", quota_units=1000)
+        primary_auth = {"Authorization": f"Bearer {token}"}
+
+        created = client.post("/v1/shortcut/credentials", headers=primary_auth)
+        assert created.status_code == 201
+        assert created.headers["cache-control"] == "no-store"
+        credential = created.json()["credential"]
+        assert credential.startswith("fts_")
+        assert created.json()["scope"] == "translate:text"
+
+        listed = client.get("/v1/shortcut/credentials", headers=primary_auth)
+        assert listed.status_code == 200
+        assert listed.json()["count"] == 1
+        assert "credential" not in listed.json()["credentials"][0]
+
+        shortcut_auth = {"Authorization": f"Bearer {credential}"}
+        assert client.get("/health", headers=shortcut_auth).status_code == 401
+        assert client.get("/v1/token/usage", headers=shortcut_auth).status_code == 401
+        assert client.get("/v1/glossary", headers=shortcut_auth).status_code == 401
+
+        translated = client.post(
+            "/v1/translate/text",
+            headers=shortcut_auth,
+            json={"text": "สวัสดี", "source": "ios-shortcut"},
+        )
+        assert translated.status_code == 200
+        assert translated.json()["translation"] == "自然译文"
+        assert fake.text_calls == 1
+        assert client.app.state.database.token_usage(record["id"])["used_units"] == 81
+
+        revoked = client.delete("/v1/shortcut/credentials", headers=primary_auth)
+        assert revoked.json() == {"revoked": 1}
+        assert client.post(
+            "/v1/translate/text", headers=shortcut_auth, json={"text": "อีกครั้ง"},
+        ).status_code == 401
+
+
+def test_shortcut_credential_follows_parent_token_state(tmp_path):
+    client, _ = make_client(tmp_path)
+    with client:
+        record, token = client.app.state.database.create_access_token("ios-user")
+        created = client.post(
+            "/v1/shortcut/credentials", headers={"Authorization": f"Bearer {token}"},
+        ).json()
+        shortcut_auth = {"Authorization": f'Bearer {created["credential"]}'}
+        assert client.post(
+            "/v1/translate/text", headers=shortcut_auth, json={"text": "สวัสดี"},
+        ).status_code == 200
+        assert client.app.state.database.set_access_token_enabled(record["id"], False)
+        assert client.post(
+            "/v1/translate/text", headers=shortcut_auth, json={"text": "สวัสดี"},
+        ).status_code == 401
+
+
+def test_legacy_token_can_issue_shortcut_credential(tmp_path):
+    with make_client(tmp_path)[0] as client:
+        created = client.post("/v1/shortcut/credentials", headers=auth())
+        assert created.status_code == 201
+        shortcut_auth = {"Authorization": f'Bearer {created.json()["credential"]}'}
+        assert client.post(
+            "/v1/translate/text", headers=shortcut_auth, json={"text": "สวัสดี"},
+        ).status_code == 200
+
+
+def test_shortcut_config_only_exposes_valid_install_url(tmp_path):
+    with make_client(
+        tmp_path,
+        ios_shortcut_url="https://www.icloud.com/shortcuts/example",
+    )[0] as client:
+        assert client.get("/v1/shortcut/config").json() == {
+            "install_url": "https://www.icloud.com/shortcuts/example",
+        }
 
 
 def test_image_translation_and_validation(tmp_path):

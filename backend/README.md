@@ -20,6 +20,7 @@ python -m venv .venv
 - `FORTRANSLATE_LLM_MODEL`：文本翻译模型名，默认使用 DeepSeek 官方推荐的 `deepseek-flash`。
 - `FORTRANSLATE_LLM_THINKING`：可选值 `enabled` 或 `disabled`；DeepSeek 翻译建议设为 `disabled`。
 - `FORTRANSLATE_DATABASE_PATH`：SQLite 文件路径。
+- `FORTRANSLATE_IOS_SHORTCUT_URL`：可选的官方 iCloud 快捷指令分享链接；配置后 PWA 可直接引导安装。
 - `FORTRANSLATE_MAX_IMAGE_BYTES`：图片上限，默认 10MB。
 - `FORTRANSLATE_MAX_TEXT_CHARS`：单次翻译原文字符数上限，默认 3000；超限请求在调用模型前返回 413。
 - `FORTRANSLATE_TEXT_CACHE_TTL_SECONDS`：文本翻译缓存有效期，默认 600 秒；设为 0 可关闭。
@@ -35,7 +36,7 @@ python -m venv .venv
 
 ## API
 
-所有接口均要求 `Authorization: Bearer <access-token>`。
+除公开的快捷指令安装配置外，所有接口均要求 `Authorization: Bearer <access-token>`。
 
 - `GET /health`：健康检查。
 - `POST /v1/translate/text`：自然文本翻译，参数兼容扩展现有契约。
@@ -45,6 +46,8 @@ python -m venv .venv
 - `DELETE /v1/glossary/{id}`：删除术语。
 - `GET /v1/usage`：汇总请求数、模型输入/输出 Token、缓存命中数和命中率。
 - `GET /v1/token/usage`：查询当前认证令牌自己的额度、余额、累计 Token 和缓存命中情况；全局管理员兼容令牌返回不限额。
+- `GET /v1/shortcut/config`：公开读取官方快捷指令安装链接。
+- `GET/POST/DELETE /v1/shortcut/credentials`：查询、签发或全部停用当前令牌名下的 iOS 快捷指令专用凭证。
 
 文本翻译只注入在原文或上下文中命中的术语；图片翻译因 OCR 在模型侧完成，会注入完整术语表。Token 数据采用上游返回的 usage，按请求持久化到 SQLite。
 
@@ -70,6 +73,12 @@ python -m fortranslate_backend.token_cli revoke 1
 所有令牌继续使用 `Authorization: Bearer <token>`。环境变量中的旧全局令牌保持兼容，部署升级不会中断现有扩展。
 
 独立令牌默认获得 5 元加权额度。每次模型返回 usage 后按 `输入 Token × 3 + 输出 Token × 9` 累计计费单位；达到额度后，下一次翻译在调用模型前返回 HTTP 429。最后一次请求可能轻微超过额度。`quota-reset` 仅清零当前计费额度，历史请求明细继续保留。旧数据库会自动增加额度和用量字段；升级前的历史用量无法归属到具体令牌，因此不追溯扣减。全局环境变量令牌作为管理员兼容令牌，不参与个人额度限制。
+
+## iOS 快捷指令专用凭证
+
+PWA 可以使用当前访问令牌签发以 `fts_` 开头的随机专用凭证。数据库仅保存 SHA-256 摘要，不保存原访问令牌或专用凭证明文。专用凭证只能调用 `POST /v1/translate/text`；余额、术语表、图片翻译和管理接口仍要求原访问令牌。
+
+独立令牌签发的专用凭证继承其额度与启用状态，产生的费用计入原令牌。全局兼容令牌签发的专用凭证会在全局令牌更换后自动失效。用户可通过 `DELETE /v1/shortcut/credentials` 一次停用自己名下的全部专用凭证。
 
 ## 测试
 

@@ -46,6 +46,18 @@ CREATE TABLE IF NOT EXISTS access_tokens (
     used_units INTEGER NOT NULL DEFAULT 0 CHECK(used_units >= 0)
 );
 CREATE INDEX IF NOT EXISTS idx_access_tokens_enabled ON access_tokens(enabled);
+CREATE TABLE IF NOT EXISTS shortcut_credentials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_kind TEXT NOT NULL CHECK(owner_kind IN ('access_token', 'legacy')),
+    owner_ref TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    token_hint TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0, 1)),
+    created_at TEXT NOT NULL,
+    last_used_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_shortcut_credentials_owner
+    ON shortcut_credentials(owner_kind, owner_ref, enabled);
 """
 
 
@@ -183,6 +195,76 @@ class Database:
         result = dict(row)
         result.pop("token_hash", None)
         return result
+
+    def get_access_token(self, token_id: int) -> dict | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                """SELECT id, name, token_hint, enabled, created_at, last_used_at,
+                          quota_units, used_units
+                   FROM access_tokens WHERE id = ? AND enabled = 1""",
+                (token_id,),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def create_shortcut_credential(self, owner_kind: str, owner_ref: str) -> tuple[dict, str]:
+        if owner_kind not in {"access_token", "legacy"} or not owner_ref:
+            raise ValueError("A valid shortcut credential owner is required")
+        token = f"fts_{secrets.token_urlsafe(32)}"
+        digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        now = utc_now()
+        with self.connect() as connection:
+            cursor = connection.execute(
+                """INSERT INTO shortcut_credentials(
+                       owner_kind, owner_ref, token_hash, token_hint, enabled, created_at
+                   ) VALUES (?, ?, ?, ?, 1, ?)""",
+                (owner_kind, owner_ref, digest, f"{token[:8]}…{token[-4:]}", now),
+            )
+            row = connection.execute(
+                """SELECT id, token_hint, enabled, created_at, last_used_at
+                   FROM shortcut_credentials WHERE id = ?""",
+                (cursor.lastrowid,),
+            ).fetchone()
+        return dict(row), token
+
+    def authenticate_shortcut_credential(self, token: str) -> dict | None:
+        if not token or not token.startswith("fts_"):
+            return None
+        digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        with self.connect() as connection:
+            row = connection.execute(
+                """SELECT id, owner_kind, owner_ref, token_hash, token_hint, created_at, last_used_at
+                   FROM shortcut_credentials WHERE token_hash = ? AND enabled = 1""",
+                (digest,),
+            ).fetchone()
+            if row is None or not hmac.compare_digest(row["token_hash"], digest):
+                return None
+            connection.execute(
+                "UPDATE shortcut_credentials SET last_used_at = ? WHERE id = ?",
+                (utc_now(), row["id"]),
+            )
+        result = dict(row)
+        result.pop("token_hash", None)
+        return result
+
+    def list_shortcut_credentials(self, owner_kind: str, owner_ref: str) -> list[dict]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                """SELECT id, token_hint, enabled, created_at, last_used_at
+                   FROM shortcut_credentials
+                   WHERE owner_kind = ? AND owner_ref = ? AND enabled = 1
+                   ORDER BY id DESC""",
+                (owner_kind, owner_ref),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def revoke_shortcut_credentials(self, owner_kind: str, owner_ref: str) -> int:
+        with self.connect() as connection:
+            cursor = connection.execute(
+                """UPDATE shortcut_credentials SET enabled = 0
+                   WHERE owner_kind = ? AND owner_ref = ? AND enabled = 1""",
+                (owner_kind, owner_ref),
+            )
+        return cursor.rowcount
 
     def has_available_quota(self, token_id: int) -> bool:
         with self.connect() as connection:

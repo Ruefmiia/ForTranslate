@@ -1,4 +1,6 @@
-from fortranslate_backend.config import Settings, normalize_llm_model
+import pytest
+
+from fortranslate_backend.config import Settings, normalize_ios_shortcut_url, normalize_llm_model
 
 
 def test_deepseek_defaults(monkeypatch):
@@ -15,3 +17,10 @@ def test_legacy_deepseek_models_are_migrated():
     assert normalize_llm_model("deepseek-chat") == "deepseek-flash"
     assert normalize_llm_model("deepseek-v4-flash") == "deepseek-flash"
     assert normalize_llm_model("custom-model") == "custom-model"
+
+
+def test_ios_shortcut_url_is_restricted_to_official_icloud_links():
+    assert normalize_ios_shortcut_url("") == ""
+    assert normalize_ios_shortcut_url(" https://www.icloud.com/shortcuts/example ") == "https://www.icloud.com/shortcuts/example"
+    with pytest.raises(ValueError, match="iCloud shortcut URL"):
+        normalize_ios_shortcut_url("https://example.com/shortcut")

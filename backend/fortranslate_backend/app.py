@@ -6,7 +6,7 @@ import hashlib
 import hmac
 import json
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
@@ -93,19 +93,60 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     app.state.settings = settings
     app.state.text_cache = text_cache
 
-    def authenticate(authorization: str | None = Header(default=None)) -> dict:
+    def invalid_authentication() -> HTTPException:
+        return HTTPException(
+            status_code=401,
+            detail="Invalid or missing access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    def bearer_token(authorization: str | None) -> str:
         scheme, _, token = (authorization or "").partition(" ")
-        legacy_match = bool(settings.access_token) and hmac.compare_digest(token, settings.access_token)
-        database_match = database.authenticate_access_token(token) if scheme.lower() == "bearer" else None
-        if scheme.lower() != "bearer" or not (legacy_match or database_match):
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid or missing access token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        if scheme.lower() != "bearer" or not token:
+            raise invalid_authentication()
+        return token
+
+    def primary_identity(token: str) -> dict | None:
+        database_match = database.authenticate_access_token(token)
         if database_match:
-            return database_match
-        return {"id": None, "name": "legacy-global-token"}
+            return database_match | {"credential_kind": "primary"}
+        if settings.access_token and hmac.compare_digest(token, settings.access_token):
+            return {"id": None, "name": "legacy-global-token", "credential_kind": "primary"}
+        return None
+
+    def authenticate(authorization: str | None = Header(default=None)) -> dict:
+        identity = primary_identity(bearer_token(authorization))
+        if identity is None:
+            raise invalid_authentication()
+        return identity
+
+    def authenticate_translation(authorization: str | None = Header(default=None)) -> dict:
+        token = bearer_token(authorization)
+        identity = primary_identity(token)
+        if identity is not None:
+            return identity
+        credential = database.authenticate_shortcut_credential(token)
+        if credential is None:
+            raise invalid_authentication()
+        if credential["owner_kind"] == "access_token":
+            identity = database.get_access_token(int(credential["owner_ref"]))
+        else:
+            expected = hashlib.sha256(settings.access_token.encode("utf-8")).hexdigest()
+            identity = (
+                {"id": None, "name": "legacy-global-token"}
+                if settings.access_token and hmac.compare_digest(credential["owner_ref"], expected)
+                else None
+            )
+        if identity is None:
+            raise invalid_authentication()
+        return identity | {"credential_kind": "shortcut", "shortcut_credential_id": credential["id"]}
+
+    def shortcut_owner(identity: dict) -> tuple[str, str]:
+        token_id = identity.get("id")
+        if token_id is not None:
+            return "access_token", str(token_id)
+        digest = hashlib.sha256(settings.access_token.encode("utf-8")).hexdigest()
+        return "legacy", digest
 
     def billing_units(usage: dict) -> int:
         value = (
@@ -149,7 +190,7 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
         return {"status": "ok"}
 
     @app.post("/v1/translate/text")
-    def translate_text(payload: TextTranslationRequest, identity: dict = Depends(authenticate)) -> dict:
+    def translate_text(payload: TextTranslationRequest, identity: dict = Depends(authenticate_translation)) -> dict:
         if len(payload.text) > settings.max_text_chars:
             raise HTTPException(
                 status_code=413,
@@ -236,6 +277,28 @@ def create_app(settings: Settings | None = None, llm_client: LLMClient | None = 
     @app.get("/v1/usage", dependencies=auth)
     def usage() -> dict:
         return database.usage_summary()
+
+    @app.get("/v1/shortcut/config")
+    def shortcut_config() -> dict:
+        return {"install_url": settings.ios_shortcut_url or None}
+
+    @app.get("/v1/shortcut/credentials")
+    def shortcut_credentials(identity: dict = Depends(authenticate)) -> dict:
+        owner_kind, owner_ref = shortcut_owner(identity)
+        credentials = database.list_shortcut_credentials(owner_kind, owner_ref)
+        return {"credentials": credentials, "count": len(credentials)}
+
+    @app.post("/v1/shortcut/credentials", status_code=201)
+    def create_shortcut_credential(response: Response, identity: dict = Depends(authenticate)) -> dict:
+        response.headers["Cache-Control"] = "no-store"
+        owner_kind, owner_ref = shortcut_owner(identity)
+        record, credential = database.create_shortcut_credential(owner_kind, owner_ref)
+        return record | {"credential": credential, "scope": "translate:text"}
+
+    @app.delete("/v1/shortcut/credentials")
+    def revoke_shortcut_credentials(identity: dict = Depends(authenticate)) -> dict:
+        owner_kind, owner_ref = shortcut_owner(identity)
+        return {"revoked": database.revoke_shortcut_credentials(owner_kind, owner_ref)}
 
     @app.get("/v1/token/usage")
     def current_token_usage(identity: dict = Depends(authenticate)) -> dict:

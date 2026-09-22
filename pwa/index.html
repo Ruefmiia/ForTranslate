@@ -115,34 +115,40 @@
         <div><h2>iOS 快捷翻译</h2></div>
         <button class="icon-button dialog-close" type="button" aria-label="关闭快捷指令设置"><svg aria-hidden="true"><use href="#icon-clear"/></svg></button>
       </div>
-      <p class="dialog-intro">创建后，可从其他 App 的分享菜单直接发送文字并复制译文。</p>
-      <div id="shortcut-token-state" class="shortcut-token-state" role="status"></div>
-      <div class="shortcut-copy-grid">
-        <button id="copy-shortcut-endpoint" class="secondary-button" type="button">复制接口地址</button>
-        <button id="copy-shortcut-token" class="secondary-button" type="button">复制访问令牌</button>
+      <p class="dialog-intro">安装一次后，即可从其他 App 的分享菜单直接翻译文字。</p>
+      <div id="shortcut-token-state" class="shortcut-token-state" role="status" aria-live="polite"></div>
+      <button id="prepare-shortcut" class="primary-button shortcut-primary-button" type="button">正在检查…</button>
+      <p id="shortcut-error" class="field-error" role="alert" hidden></p>
+      <div class="shortcut-credential-summary">
+        <span id="shortcut-credential-count">暂无专用凭证</span>
+        <button id="revoke-shortcuts" class="danger-button" type="button" hidden>停用全部</button>
       </div>
-      <ol class="shortcut-steps">
-        <li><strong>创建快捷指令</strong><span>点击下方按钮，在“快捷指令”中创建并命名为 ForTranslation。</span></li>
-        <li><strong>添加网络请求</strong><span>使用“获取 URL 内容”，方法选 POST，请求正文选 JSON。</span></li>
-        <li><strong>填写请求</strong><span>标头填写 Authorization；JSON 添加 text、context、source。</span></li>
-        <li><strong>处理译文</strong><span>读取返回字典中的 translation，然后复制到剪贴板并显示结果。</span></li>
-        <li><strong>加入分享菜单</strong><span>在快捷指令详情中开启“在共享表单中显示”，接收类型选择“文本”。</span></li>
-      </ol>
+      <details id="shortcut-credential-output" class="shortcut-details" hidden>
+        <summary>查看专用凭证</summary>
+        <div class="shortcut-credential-value"><code id="shortcut-credential"></code></div>
+        <button id="copy-shortcut-credential" class="secondary-button" type="button">复制专用凭证</button>
+        <a id="open-shortcut-install" class="secondary-button" href="#" hidden>继续安装</a>
+      </details>
       <details class="shortcut-details">
-        <summary>查看完整配置</summary>
+        <summary>手动设置</summary>
+        <ol class="shortcut-steps">
+          <li><strong>生成专用凭证</strong><span>点击上方按钮，凭证只允许文字翻译。</span></li>
+          <li><strong>创建快捷指令</strong><span>接收分享菜单中的文本，并添加“获取 URL 内容”。</span></li>
+          <li><strong>填写请求</strong><span>方法选 POST，正文选 JSON；标头使用下方专用凭证。</span></li>
+          <li><strong>处理译文</strong><span>读取返回字典中的 translation，然后复制并显示结果。</span></li>
+          <li><strong>加入分享菜单</strong><span>开启“在共享表单中显示”，接收类型选择“文本”。</span></li>
+        </ol>
         <dl>
           <div><dt>接口</dt><dd><code id="shortcut-endpoint"></code></dd></div>
           <div><dt>方法</dt><dd><code>POST</code></dd></div>
-          <div><dt>标头</dt><dd><code>Authorization: Bearer [访问令牌]</code></dd></div>
+          <div><dt>标头</dt><dd><code>Authorization: Bearer [专用凭证]</code></dd></div>
           <div><dt>JSON</dt><dd><code>text=[快捷指令输入] · context=&quot;&quot; · source=&quot;ios-shortcut&quot;</code></dd></div>
           <div><dt>译文字段</dt><dd><code>translation</code></dd></div>
         </dl>
       </details>
-      <a class="primary-button shortcut-open-button" href="shortcuts://create-shortcut">打开“快捷指令”</a>
-      <p class="privacy-note">访问令牌属于敏感信息。设置完成后请清空剪贴板，不要共享包含令牌的快捷指令。</p>
+      <p class="privacy-note">专用凭证不包含原访问令牌，可随时在这里全部停用。</p>
     </section>
   </dialog>
-
   <dialog id="history-dialog" class="app-dialog history-dialog">
     <section class="dialog-card">
       <div class="dialog-heading">

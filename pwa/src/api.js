@@ -37,8 +37,8 @@ export function serviceError(status, detail) {
   return detail || `翻译服务返回 ${status}`;
 }
 
-async function request(path, { token, method = "GET", body, signal, timeoutMs = 45_000 } = {}) {
-  if (!token?.trim()) throw new ApiError("请先填写访问令牌", 401);
+async function request(path, { token, method = "GET", body, signal, timeoutMs = 45_000, authenticated = true } = {}) {
+  if (authenticated && !token?.trim()) throw new ApiError("请先填写访问令牌", 401);
 
   const controller = new AbortController();
   let timedOut = false;
@@ -50,7 +50,8 @@ async function request(path, { token, method = "GET", body, signal, timeoutMs = 
   signal?.addEventListener("abort", abortFromCaller, { once: true });
 
   try {
-    const headers = new Headers({ Authorization: `Bearer ${token.trim()}` });
+    const headers = new Headers();
+    if (token?.trim()) headers.set("Authorization", `Bearer ${token.trim()}`);
     if (body !== undefined) headers.set("Content-Type", "application/json");
     const response = await fetch(path, {
       method,
@@ -100,4 +101,20 @@ export async function translateText(token, text, signal) {
     timeoutMs: 90_000
   });
   return normalizeResult(payload);
+}
+
+export function getShortcutConfig() {
+  return request("/v1/shortcut/config", { authenticated: false });
+}
+
+export function getShortcutCredentials(token) {
+  return request("/v1/shortcut/credentials", { token });
+}
+
+export function createShortcutCredential(token) {
+  return request("/v1/shortcut/credentials", { token, method: "POST" });
+}
+
+export function revokeShortcutCredentials(token) {
+  return request("/v1/shortcut/credentials", { token, method: "DELETE" });
 }

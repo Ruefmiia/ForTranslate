@@ -11,6 +11,13 @@ from .translation_rules_generated import MAX_TEXT_CHARS
 LEGACY_DEEPSEEK_MODELS = {"deepseek-chat", "deepseek-v4-flash"}
 
 
+def normalize_ios_shortcut_url(value: str) -> str:
+    url = value.strip()
+    if url and not url.startswith("https://www.icloud.com/shortcuts/"):
+        raise ValueError("FORTRANSLATE_IOS_SHORTCUT_URL must be an iCloud shortcut URL")
+    return url
+
+
 def normalize_llm_model(value: str) -> str:
     model = value.strip()
     return "deepseek-flash" if model in LEGACY_DEEPSEEK_MODELS else model
@@ -32,6 +39,7 @@ class Settings:
     default_token_quota_yuan: Decimal = Decimal("5")
     input_price_per_million: Decimal = Decimal("3")
     output_price_per_million: Decimal = Decimal("9")
+    ios_shortcut_url: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -44,6 +52,7 @@ class Settings:
             llm_base_url=os.getenv("FORTRANSLATE_LLM_BASE_URL", "https://api.deepseek.com"),
             llm_model=normalize_llm_model(os.getenv("FORTRANSLATE_LLM_MODEL", "deepseek-flash")),
             database_path=Path(os.getenv("FORTRANSLATE_DATABASE_PATH", "./data/fortranslate.db")),
+            ios_shortcut_url=normalize_ios_shortcut_url(os.getenv("FORTRANSLATE_IOS_SHORTCUT_URL", "")),
             max_image_bytes=int(os.getenv("FORTRANSLATE_MAX_IMAGE_BYTES", str(10 * 1024 * 1024))),
             request_timeout_seconds=float(os.getenv("FORTRANSLATE_REQUEST_TIMEOUT_SECONDS", "90")),
             llm_thinking=llm_thinking,

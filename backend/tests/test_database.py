@@ -43,3 +43,6 @@ def test_existing_database_is_migrated_with_default_quota(tmp_path):
     with database.connect() as migrated:
         usage_columns = {row["name"] for row in migrated.execute("PRAGMA table_info(usage_events)")}
     assert {"token_id", "billing_units", "cache_hit"} <= usage_columns
+    with database.connect() as migrated:
+        tables = {row["name"] for row in migrated.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+    assert "shortcut_credentials" in tables

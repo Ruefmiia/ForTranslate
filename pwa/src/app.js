@@ -1,4 +1,4 @@
-import { ApiError, codePointLength, getTokenBalance, testConnection, translateText } from "./api.js";
+import { ApiError, codePointLength, createShortcutCredential, getShortcutConfig, getShortcutCredentials, getTokenBalance, revokeShortcutCredentials, testConnection, translateText } from "./api.js";
 import { MAX_TEXT_CHARS } from "./translation-rules.generated.js";
 import { addHistory, clearHistory, getHistory, getSettings, getToken, saveSettings, saveToken } from "./storage.js";
 
@@ -32,6 +32,8 @@ const shortcutEndpoint = new URL("/v1/translate/text", window.location.origin).h
 let activeRequest = null;
 let deferredInstallPrompt = null;
 let toastTimer = null;
+let shortcutInstallUrl = "";
+let pendingShortcutCredential = "";
 
 function openDialog(dialog) {
   if (!dialog.open) dialog.showModal();
@@ -195,26 +197,145 @@ function openSettings() {
   setTimeout(() => tokenInput.focus(), 30);
 }
 
-function openShortcutSetup() {
+function renderShortcutCredentialCount(count) {
+  const countLabel = $("#shortcut-credential-count");
+  const revokeButton = $("#revoke-shortcuts");
+  countLabel.textContent = count ? `已有 ${count.toLocaleString()} 个专用凭证` : "暂无专用凭证";
+  revokeButton.hidden = count === 0;
+}
+
+function showShortcutCredential(credential) {
+  pendingShortcutCredential = credential;
+  $("#shortcut-credential").textContent = credential;
+  $("#shortcut-credential-output").hidden = false;
+  const continueLink = $("#open-shortcut-install");
+  continueLink.hidden = !shortcutInstallUrl;
+  continueLink.href = shortcutInstallUrl || "#";
+}
+
+async function refreshShortcutSetup() {
   const token = getToken();
   const state = $("#shortcut-token-state");
+  const prepareButton = $("#prepare-shortcut");
+  const error = $("#shortcut-error");
+  error.hidden = true;
+  error.textContent = "";
   $("#shortcut-endpoint").textContent = shortcutEndpoint;
-  $("#copy-shortcut-token").disabled = !token;
-  state.className = token ? "shortcut-token-state ready" : "shortcut-token-state error";
-  state.textContent = token ? "访问令牌已准备好，可按需复制。" : "请先在设置中保存访问令牌。";
+  if (!token) {
+    state.className = "shortcut-token-state error";
+    state.textContent = "请先在设置中保存访问令牌。";
+    prepareButton.disabled = true;
+    prepareButton.textContent = "需要访问令牌";
+    renderShortcutCredentialCount(0);
+    return;
+  }
+
+  state.className = "shortcut-token-state";
+  state.textContent = "正在检查安装状态…";
+  prepareButton.disabled = true;
+  try {
+    const [config, credentials] = await Promise.all([
+      getShortcutConfig(),
+      getShortcutCredentials(token)
+    ]);
+    shortcutInstallUrl = typeof config.install_url === "string" ? config.install_url : "";
+    renderShortcutCredentialCount(Number(credentials.count || 0));
+    state.className = shortcutInstallUrl ? "shortcut-token-state ready" : "shortcut-token-state";
+    state.textContent = shortcutInstallUrl
+      ? "已准备好。安装时只需粘贴一次专用凭证。"
+      : "安装模板尚未发布，可先生成专用凭证并手动设置。";
+    prepareButton.textContent = shortcutInstallUrl ? "复制凭证并安装" : "生成专用凭证";
+    prepareButton.dataset.action = "install";
+    prepareButton.disabled = false;
+  } catch (requestError) {
+    state.className = "shortcut-token-state error";
+    state.textContent = "无法读取快捷翻译状态。";
+    error.textContent = requestError.message;
+    error.hidden = false;
+    prepareButton.textContent = "重新检查";
+    prepareButton.dataset.action = "retry";
+    prepareButton.disabled = false;
+  }
+}
+
+function openShortcutSetup() {
+  pendingShortcutCredential = "";
+  $("#shortcut-credential-output").hidden = true;
   closeDialog(settingsDialog);
   openDialog(shortcutDialog);
+  refreshShortcutSetup();
 }
 
 async function copyShortcutValue(value, successMessage) {
   try {
     await navigator.clipboard.writeText(value);
     showToast(successMessage);
+    return true;
   } catch {
-    showToast("复制失败，请长按配置手动复制");
+    showToast("复制失败，请长按凭证手动复制");
+    return false;
   }
 }
 
+async function prepareShortcutInstall() {
+  const button = $("#prepare-shortcut");
+  if (button.dataset.action === "retry") {
+    await refreshShortcutSetup();
+    return;
+  }
+  const token = getToken();
+  if (!token) {
+    closeDialog(shortcutDialog);
+    openSettings();
+    return;
+  }
+  const error = $("#shortcut-error");
+  button.disabled = true;
+  button.textContent = "正在准备…";
+  error.hidden = true;
+  try {
+    const created = await createShortcutCredential(token);
+    const credential = created.credential;
+    const copied = await copyShortcutValue(credential, "专用凭证已复制");
+    showShortcutCredential(credential);
+    const current = await getShortcutCredentials(token);
+    renderShortcutCredentialCount(Number(current.count || 0));
+    if (shortcutInstallUrl && copied) {
+      showToast("凭证已复制，安装时请粘贴");
+      window.location.assign(shortcutInstallUrl);
+      return;
+    }
+    $("#shortcut-token-state").textContent = copied
+      ? "专用凭证已生成，请按手动设置使用。"
+      : "专用凭证已生成，请长按复制后继续。";
+  } catch (requestError) {
+    error.textContent = requestError.message;
+    error.hidden = false;
+  } finally {
+    button.disabled = false;
+    button.textContent = shortcutInstallUrl ? "复制凭证并安装" : "重新生成专用凭证";
+  }
+}
+
+async function revokeAllShortcutCredentials() {
+  const token = getToken();
+  if (!token || !window.confirm("停用后，已安装的 iOS 快捷翻译将无法使用。确定继续吗？")) return;
+  const button = $("#revoke-shortcuts");
+  button.disabled = true;
+  try {
+    const result = await revokeShortcutCredentials(token);
+    pendingShortcutCredential = "";
+    $("#shortcut-credential-output").hidden = true;
+    renderShortcutCredentialCount(0);
+    showToast(`已停用 ${Number(result.revoked || 0).toLocaleString()} 个专用凭证`);
+  } catch (requestError) {
+    const error = $("#shortcut-error");
+    error.textContent = requestError.message;
+    error.hidden = false;
+  } finally {
+    button.disabled = false;
+  }
+}
 async function submitSettings(event) {
   event.preventDefault();
   const token = tokenInput.value.trim();
@@ -390,18 +511,13 @@ copyButton.addEventListener("click", async () => {
 $("#settings-button").addEventListener("click", openSettings);
 $("#settings-form").addEventListener("submit", submitSettings);
 $("#ios-shortcut-button").addEventListener("click", openShortcutSetup);
-$("#copy-shortcut-endpoint").addEventListener("click", async () => {
-  await copyShortcutValue(shortcutEndpoint, "接口地址已复制");
-});
-$("#copy-shortcut-token").addEventListener("click", async () => {
-  const token = getToken();
-  if (!token) {
-    closeDialog(shortcutDialog);
-    openSettings();
-    return;
+$("#prepare-shortcut").addEventListener("click", prepareShortcutInstall);
+$("#copy-shortcut-credential").addEventListener("click", async () => {
+  if (pendingShortcutCredential) {
+    await copyShortcutValue(pendingShortcutCredential, "专用凭证已复制");
   }
-  await copyShortcutValue(token, "访问令牌已复制，设置完成后请清空剪贴板");
 });
+$("#revoke-shortcuts").addEventListener("click", revokeAllShortcutCredentials);
 $("#toggle-token").addEventListener("click", (event) => {
   const show = tokenInput.type === "password";
   tokenInput.type = show ? "text" : "password";
